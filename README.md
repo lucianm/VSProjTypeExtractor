@@ -17,4 +17,12 @@ VSProjectExternal( 'SomeExternal-vsproj' )
 
 ## How does it work?
 
-**_VSProjTypeExtractor_** consist of 2 DLLs, `VSProjTypeExtractorManaged.dll` which is written in C# and is responsible of the actual work, by using automating Visual Studio in the background for loading the project file just to be able to query the type GUID, and the 'VSProjTypeExtractor.dll' C wrapper which can be used in any native apllication to call this functionality.
+**_VSProjTypeExtractor_** consists of 2 DLLs, `VSProjTypeExtractorManaged.dll` which is written in C# and is responsible of the actual work, by using automating Visual Studio in the background for loading the project file just to be able to query the type GUID, and the 'VSProjTypeExtractor.dll' **C** wrapper which can be used in any native apllication to call this functionality.
+
+
+## Requirements, Usage
+
+**_VSProjTypeExtractor_** targets .NET Framework v4.7.2, so the 2 DLLs which you can download from the [Releases](https://github.com/lucianm/VSProjTypeExtractor/releases) section will need this version of the .NET framework to be installed on your system. Just place them somewhere in the 'PATH' or along with FBuild.exe (a build supporting _VSProjectExternal_, post v0.99 in any case) in the same directory.
+
+
+© 2019 Lucian Muresan
