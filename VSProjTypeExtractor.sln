@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29503.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSProjTypeExtractorManaged", "VSProjTypeExtractorManaged\VSProjTypeExtractorManaged.csproj", "{B23F7A63-8CD1-4AEB-8918-4301E67F87F8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VSProjTypeExtractor", "VSProjTypeExtractor\VSProjTypeExtractor.vcxproj", "{E4AF25FB-0E77-4853-A50A-16BA871F3C0F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +17,10 @@ Global
 		{B23F7A63-8CD1-4AEB-8918-4301E67F87F8}.Debug|x64.Build.0 = Debug|x64
 		{B23F7A63-8CD1-4AEB-8918-4301E67F87F8}.Release|x64.ActiveCfg = Release|x64
 		{B23F7A63-8CD1-4AEB-8918-4301E67F87F8}.Release|x64.Build.0 = Release|x64
+		{E4AF25FB-0E77-4853-A50A-16BA871F3C0F}.Debug|x64.ActiveCfg = Debug|x64
+		{E4AF25FB-0E77-4853-A50A-16BA871F3C0F}.Debug|x64.Build.0 = Debug|x64
+		{E4AF25FB-0E77-4853-A50A-16BA871F3C0F}.Release|x64.ActiveCfg = Release|x64
+		{E4AF25FB-0E77-4853-A50A-16BA871F3C0F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
