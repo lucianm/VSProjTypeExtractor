@@ -23,7 +23,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-	<IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)</IntDir>
+    <IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -31,7 +31,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-	<IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)</IntDir>
+    <IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)</IntDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -47,12 +47,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-	<OutDir>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\</OutDir>
     <LibraryPath>$(OutDir);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-	<OutDir>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\</OutDir>
     <LibraryPath>$(OutDir);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -66,6 +66,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\external_submodules\googletest\googletest\include;$(ProjectDir)..\external_submodules\googletest\googletest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -84,6 +85,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\external_submodules\googletest\googletest\include;$(ProjectDir)..\external_submodules\googletest\googletest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -92,6 +94,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\external_submodules\googletest\googletest\src\gtest-all.cc" />
+    <ClCompile Include="test_VSProjTypeExtractor.cpp" />
     <ClCompile Include="VSProjTypeExtractorTest.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -103,6 +107,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ExternalDummyProject.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="test_VSProjTypeExtractor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

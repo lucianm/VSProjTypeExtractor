@@ -13,13 +13,27 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="googletest-build">
+      <UniqueIdentifier>{ffb932bc-bc75-4506-a146-f96dad3ab22c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VSProjTypeExtractorTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\external_submodules\googletest\googletest\src\gtest-all.cc">
+      <Filter>googletest-build</Filter>
+    </ClCompile>
+    <ClCompile Include="test_VSProjTypeExtractor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ExternalDummyProject.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="test_VSProjTypeExtractor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
