@@ -1,14 +1,78 @@
 #pragma once
 
-#ifdef BUILD_VSProjTypeExtractor
-#define CDECL_VSPROJTYPEEXTRACTOR __declspec (dllexport)
-#else
-#define CDECL_VSPROJTYPEEXTRACTOR __declspec (dllimport)
-#endif
 
 #define VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH 39
 
-extern "C" {
+// convenience code for the case when an application does not want to link against us
+#ifdef VSPROJTYPEEXTRACTOR_DYNLOAD
+#include <Windows.h>
+
+typedef bool  (*Type_GetProjTypeGuidString)(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion);
+typedef void* (*Type_CleanUp)(void);
+
+class VspteModuleWrapper
+{
+private:
+	VspteModuleWrapper()
+	{}
+	~VspteModuleWrapper()
+	{
+		if (_hVSProjTypeExtractor)
+		{
+			Vspte_CleanUp();
+			::FreeLibrary(_hVSProjTypeExtractor);
+			//
+			_hVSProjTypeExtractor = NULL;
+			_Vspte_GetProjTypeGuidString = nullptr;
+			_Vspte_CleanUp = nullptr;
+		}
+	}
+	Type_GetProjTypeGuidString _Vspte_GetProjTypeGuidString = nullptr;
+	Type_CleanUp _Vspte_CleanUp = nullptr;
+	HMODULE _hVSProjTypeExtractor = NULL;
+
+
+public:
+	/** @brief  Access to singleton
+
+	*/
+	static VspteModuleWrapper* Instance()
+	{
+		static VspteModuleWrapper s_Instance;
+		return &s_Instance;
+	}
+
+	/** @brief  Loads VSProjTypeExtractor.dll if possible
+
+		Needs to be called once before attempting to call @Vspte_GetProjTypeGuidString or @Vspte_CleanUp
+	*/
+	void Load()
+	{
+		try {
+			if (!_hVSProjTypeExtractor)
+			{
+				_hVSProjTypeExtractor = ::LoadLibrary(L"VSProjTypeExtractor");
+				if (_hVSProjTypeExtractor)
+				{
+					_Vspte_GetProjTypeGuidString = (Type_GetProjTypeGuidString) ::GetProcAddress(_hVSProjTypeExtractor, "Vspte_GetProjTypeGuidString");
+					_Vspte_CleanUp = (Type_CleanUp) ::GetProcAddress(_hVSProjTypeExtractor, "Vspte_CleanUp");
+				}
+			}
+		}
+		catch (...)
+		{
+		}
+	}
+
+	/** @brief  Queries if VSProjTypeExtractor.dll was successfully loaded
+
+		Helpful for avoiding to call @Vspte_GetProjTypeGuidString or @Vspte_CleanUp without effect
+	*/
+	bool IsLoaded()
+	{
+		return _hVSProjTypeExtractor != NULL && _Vspte_GetProjTypeGuidString != nullptr && _Vspte_CleanUp != nullptr;
+	}
+
 	/** @brief  Determines project type GUID of an existing project
 
 		The project type GUID is determined by silently automating the loading of the project in a volatile solution of a new,
@@ -19,7 +83,17 @@ extern "C" {
 		@param[in] projTypeGuidMaxLength maximum length of the project type GUID, if VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH is provided, only the first GUID is retrieved
 		@param[in] VS_MajorVersion major Visual Studio version to use
 	*/
-	bool CDECL_VSPROJTYPEEXTRACTOR Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion);
+	bool Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion)
+	{
+		if (_Vspte_GetProjTypeGuidString)
+		{
+			return _Vspte_GetProjTypeGuidString(projPath, projTypeGuid, projTypeGuidMaxLength, VS_MajorVersion);
+		}
+		else
+		{
+			return false;
+		}
+	}
 
 	/** @brief  Optionally closes the volatile solution and quits the Visual Studio instance
 
@@ -27,5 +101,43 @@ extern "C" {
 		in order to save time in subsequent calls to @Vspte_GetProjTypeGuidString. Cleanup is done anyway on application exit, so calling it
 		explicitely is not necessary, it's provided more for testing purposes
 	*/
-	void CDECL_VSPROJTYPEEXTRACTOR Vspte_CleanUp();
-}
+	void Vspte_CleanUp()
+	{
+		if (_Vspte_CleanUp)
+		{
+			_Vspte_CleanUp();
+		}
+	}
+};
+
+#else
+
+	#ifdef BUILD_VSProjTypeExtractor
+	#define CDECL_VSPROJTYPEEXTRACTOR __declspec (dllexport)
+	#else
+	#define CDECL_VSPROJTYPEEXTRACTOR __declspec (dllimport)
+	#endif
+
+	extern "C" {
+		/** @brief  Determines project type GUID of an existing project
+
+			The project type GUID is determined by silently automating the loading of the project in a volatile solution of a new,
+			hidden Visual Studio instance.
+
+			@param[in] projPath path to visual studio project file
+			@param[in,out] projTypeGuid character string pre-allocated to the lenght provided in projTypeGuidMaxLength for receiving the project type GUID
+			@param[in] projTypeGuidMaxLength maximum length of the project type GUID, if VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH is provided, only the first GUID is retrieved
+			@param[in] VS_MajorVersion major Visual Studio version to use
+		*/
+		bool CDECL_VSPROJTYPEEXTRACTOR Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion);
+
+		/** @brief  Optionally closes the volatile solution and quits the Visual Studio instance
+
+			After a call to @Vspte_GetProjTypeGuidString, the Visual Studio instance is kept up and running with the volatile solution loaded,
+			in order to save time in subsequent calls to @Vspte_GetProjTypeGuidString. Cleanup is done anyway on application exit, so calling it
+			explicitely is not necessary, it's provided more for testing purposes
+		*/
+		void CDECL_VSPROJTYPEEXTRACTOR Vspte_CleanUp();
+	}
+
+#endif

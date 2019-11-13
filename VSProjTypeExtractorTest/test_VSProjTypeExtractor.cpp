@@ -1,7 +1,5 @@
 #include "test_VSProjTypeExtractor.h"
 
-#include "..\VSProjTypeExtractor\VSProjTypeExtractor.h"
-
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -10,6 +8,8 @@
 #include <stdexcept>
 
 #include <Windows.h>
+#define VSPROJTYPEEXTRACTOR_DYNLOAD
+#include "..\VSProjTypeExtractor\VSProjTypeExtractor.h"
 
 #define MYTEST_COUT std::cout << "[          ] [ INFO ] "
 
@@ -18,6 +18,7 @@ std::mutex CTestF_VSProjTypeExtractor::mtxCout;
 
 CTestF_VSProjTypeExtractor::CTestF_VSProjTypeExtractor()
 {
+	VspteModuleWrapper::Instance()->Load();
 	// determine executable path in order to find the test data (a project) just as it is stored with the sources
 	std::vector<TCHAR> binPath(MAX_PATH);
 	DWORD dwRes = ::GetModuleFileName(0, &binPath[0], DWORD(binPath.size()));
@@ -51,7 +52,7 @@ void CTestF_VSProjTypeExtractor::SetUp()
 
 void CTestF_VSProjTypeExtractor::TearDown()
 {
-	Vspte_CleanUp();
+	VspteModuleWrapper::Instance()->Vspte_CleanUp();
 }
 
 
@@ -65,40 +66,43 @@ void CTestF_VSProjTypeExtractor::TearDownTestCase()
 
 void CTestF_VSProjTypeExtractor::SingleExtractProjGuid(const char* projFileName, const char* testProjTypeGuid, const char* testProjTypeName)
 {
-	std::string strCurrentTestProjPath = strTestDataPath + projFileName;
-
-	std::unique_lock<std::mutex> lock(mtxCout);
-	MYTEST_COUT << "Extracting project type GUID for the test project located at '" << strCurrentTestProjPath.c_str() << "'..." << std::endl;
-	lock.unlock();
-
-	char projTypeGuid[VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH] = { 0 };
-	bool bSuccess = false;
-	EXPECT_NO_THROW(
-		bSuccess = Vspte_GetProjTypeGuidString(
-			strCurrentTestProjPath.c_str(),
-			projTypeGuid,
-			VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH,
-			16) /* try with VS2019 */
-	);
-
-	lock.lock();
-	EXPECT_TRUE(bSuccess) << "Calling Vspte_GetProjTypeGuidString has failed, maybe your VS installation does not support " << testProjTypeName << " projects !!!";
-	if (bSuccess)
+	if (VspteModuleWrapper::Instance()->IsLoaded())
 	{
-		MYTEST_COUT << "Calling Vspte_GetProjTypeGuidString has SUCCEEDED" << std::endl;
-	}
-	lock.unlock();
+		std::string strCurrentTestProjPath = strTestDataPath + projFileName;
 
-	lock.lock();
-	if (strncmp(projTypeGuid, testProjTypeGuid, VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH) != 0)
-	{
-		FAIL() << "Extracted project type GUID does not match expected " << testProjTypeGuid << " !!!";
+		std::unique_lock<std::mutex> lock(mtxCout);
+		MYTEST_COUT << "Extracting project type GUID for the test project located at '" << strCurrentTestProjPath.c_str() << "'..." << std::endl;
+		lock.unlock();
+
+		char projTypeGuid[VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH] = { 0 };
+		bool bSuccess = false;
+		EXPECT_NO_THROW(
+			bSuccess = VspteModuleWrapper::Instance()->Vspte_GetProjTypeGuidString(
+				strCurrentTestProjPath.c_str(),
+				projTypeGuid,
+				VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH,
+				16) /* try with VS2019 */
+		);
+
+		lock.lock();
+		EXPECT_TRUE(bSuccess) << "Calling Vspte_GetProjTypeGuidString has failed, maybe your VS installation does not support " << testProjTypeName << " projects !!!";
+		if (bSuccess)
+		{
+			MYTEST_COUT << "Calling Vspte_GetProjTypeGuidString has SUCCEEDED" << std::endl;
+		}
+		lock.unlock();
+
+		lock.lock();
+		if (strncmp(projTypeGuid, testProjTypeGuid, VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH) != 0)
+		{
+			FAIL() << "Extracted project type GUID does not match expected " << testProjTypeGuid << " !!!";
+		}
+		else
+		{
+			MYTEST_COUT << "Project type GUID found for the " << testProjTypeName << " project is " << projTypeGuid << std::endl;
+		}
+		lock.unlock();
 	}
-	else
-	{
-		MYTEST_COUT << "Project type GUID found for the " << testProjTypeName << " project is " << projTypeGuid << std::endl;
-	}
-	lock.unlock();
 }
 
 TEST_F(CTestF_VSProjTypeExtractor, tc_SingleThreadSingleProjectCSharp)
