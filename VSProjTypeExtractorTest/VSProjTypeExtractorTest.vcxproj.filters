@@ -16,6 +16,9 @@
     <Filter Include="googletest-build">
       <UniqueIdentifier>{ffb932bc-bc75-4506-a146-f96dad3ab22c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="data">
+      <UniqueIdentifier>{bf474409-f87d-432c-a9a5-511b7c2eeb5d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VSProjTypeExtractorTest.cpp">
@@ -29,11 +32,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ExternalDummyProject.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="test_VSProjTypeExtractor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\ExternalDummyProject.csproj">
+      <Filter>data</Filter>
+    </None>
   </ItemGroup>
 </Project>

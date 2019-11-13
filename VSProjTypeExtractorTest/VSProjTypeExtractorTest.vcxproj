@@ -23,7 +23,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)</IntDir>
+    <IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -31,7 +31,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)</IntDir>
+    <IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)\</IntDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -106,10 +106,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ExternalDummyProject.csproj" />
+    <ClInclude Include="test_VSProjTypeExtractor.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test_VSProjTypeExtractor.h" />
+    <None Include="data\ExternalDummyProject.csproj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

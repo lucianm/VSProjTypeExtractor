@@ -34,6 +34,7 @@ CTestF_VSProjTypeExtractor::CTestF_VSProjTypeExtractor()
 	strTestDataPath = std::string(binPath.begin(), binPath.begin() + dwRes);
 	size_t pos1 = strTestDataPath.find("\\VSProjTypeExtractorTest\\");
 	strTestDataPath = strTestDataPath.substr(0, pos1);
+	strTestDataPath += "\\VSProjTypeExtractorTest\\data";
 }
 
 CTestF_VSProjTypeExtractor::~CTestF_VSProjTypeExtractor()
@@ -60,7 +61,7 @@ void CTestF_VSProjTypeExtractor::TearDownTestCase()
 TEST_F(CTestF_VSProjTypeExtractor, tc_SingleProject)
 {
 
-	strTestDataPath += "\\VSProjTypeExtractorTest\\ExternalDummyProject.csproj";
+	strTestDataPath += "\\ExternalDummyProject.csproj";
 
 	char testProjTypeGuid[] = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}";
 	MYTEST_COUT << "Extracting project type GUID for the test project located at '" << strTestDataPath.c_str() << "'..." << std::endl;

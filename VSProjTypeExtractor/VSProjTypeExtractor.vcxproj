@@ -25,7 +25,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
-    <IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)</IntDir>
+    <IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -33,7 +33,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
-    <IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)</IntDir>
+    <IntDir>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)\</IntDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
