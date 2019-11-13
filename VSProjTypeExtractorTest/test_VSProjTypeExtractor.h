@@ -1,6 +1,8 @@
 #pragma once
 #include <gtest/gtest.h>
 
+#include <mutex>
+
 class CTestF_VSProjTypeExtractor : public ::testing::Test
 {
 protected:
@@ -13,5 +15,8 @@ protected:
 	static void SetUpTestCase(void);
 	static void TearDownTestCase(void);
 
-	std::string strTestDataPath;
+	static void SingleExtractProjGuid(const char* projFileName, const char* testProjTypeGuid, const char* testProjTypeName);
+
+	static std::string strTestDataPath;
+	static std::mutex mtxCout;
 };
