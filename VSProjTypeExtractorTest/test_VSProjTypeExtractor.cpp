@@ -47,6 +47,7 @@ void CTestF_VSProjTypeExtractor::SetUp()
 
 void CTestF_VSProjTypeExtractor::TearDown()
 {
+	Vspte_CleanUp();
 }
 
 
@@ -58,7 +59,7 @@ void CTestF_VSProjTypeExtractor::TearDownTestCase()
 {
 }
 
-TEST_F(CTestF_VSProjTypeExtractor, tc_SingleProject)
+TEST_F(CTestF_VSProjTypeExtractor, tc_SingleThreadSingleProjectCSharp)
 {
 
 	strTestDataPath += "\\ExternalDummyProject.csproj";
@@ -68,16 +69,16 @@ TEST_F(CTestF_VSProjTypeExtractor, tc_SingleProject)
 	char projTypeGuid[VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH] = { 0 };
 	bool bSuccess = false;
 	EXPECT_NO_THROW(
-		bSuccess = GetProjTypeGuidString(
+		bSuccess = Vspte_GetProjTypeGuidString(
 			strTestDataPath.c_str(),
 			projTypeGuid,
 			VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH,
 			16) /* try with VS2019 */
 	);
-	EXPECT_TRUE(bSuccess) << "Calling GetProjTypeGuidString has failed !!!";
+	EXPECT_TRUE(bSuccess) << "Calling Vspte_GetProjTypeGuidString has failed, maybe your VS installation does not support C# projects !!!";
 	if (bSuccess)
 	{
-		MYTEST_COUT << "Calling GetProjTypeGuidString has SUCCEEDED" << std::endl;
+		MYTEST_COUT << "Calling Vspte_GetProjTypeGuidString has SUCCEEDED" << std::endl;
 	}
 
 	if (strncmp(projTypeGuid, testProjTypeGuid, VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH) != 0)
@@ -86,6 +87,6 @@ TEST_F(CTestF_VSProjTypeExtractor, tc_SingleProject)
 	}
 	else
 	{
-		MYTEST_COUT << "Project type GUID found for the test project is " << projTypeGuid << std::endl;
+		MYTEST_COUT << "Project type GUID found for the C# project is " << projTypeGuid << std::endl;
 	}
 }

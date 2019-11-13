@@ -21,11 +21,16 @@ namespace VSProjTypeExtractor {
 			msclr::lock lock(this);
 			return m_managedWorker.ExtractProjectTypeGuid(projPath, vs_MajVer);
 		}
+		void CleanUp()
+		{
+			msclr::lock lock(this);
+			m_managedWorker.CleanUp();
+		}
 	};
 }
 
 
-bool GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion)
+bool Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion)
 {
 	bool bSuccess = false;
 	System::String^ strProjPath = gcnew System::String(projPath);
@@ -40,4 +45,9 @@ bool GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned in
 		bSuccess = true;
 	}
 	return bSuccess;
+}
+
+void Vspte_CleanUp()
+{
+	VSProjTypeExtractor::ClassWorker::Instance->CleanUp();
 }

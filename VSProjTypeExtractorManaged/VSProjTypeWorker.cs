@@ -15,9 +15,15 @@ namespace VSProjTypeExtractorManaged
 
         ~VSProjTypeWorker()
         {
+            CleanUp();
+        }
+
+        public void CleanUp()
+        {
             if (dteInstanciated)
             {
                 dte.Solution.Close();
+                dte.Quit();
                 dteInstanciated = false;
             }
         }
