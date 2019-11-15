@@ -14,6 +14,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{D1F0
 		Generate_Packages.cmd = Generate_Packages.cmd
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{FB655AA3-949F-4A36-9684-F50D4BE5F59C}"
+	ProjectSection(SolutionItems) = preProject
+		HISTORY.md = HISTORY.md
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "git", "git", "{B8A538A4-A1B8-4E2A-B922-846671FAEBBD}"
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
