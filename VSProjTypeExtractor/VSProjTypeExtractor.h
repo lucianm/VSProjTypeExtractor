@@ -1,7 +1,32 @@
 #pragma once
 
+// some resource version defines
+#define STRINGIFY2(s) #s
+#define STRINGIFY(s) STRINGIFY2(s)
 
-#define VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH 39
+#define VSPTE_VERSION_MAJOR               0
+#define VSPTE_VERSION_MINOR               1
+#define VSPTE_VERSION_REVISION            0
+#define VSPTE_VERSION_BUILD               0
+
+#define VSPTE_VER_FILE_DESCRIPTION_STR    "VS automation for extracting project type GUID from existing project"
+#define VSPTE_VER_FILE_VERSION            VSPTE_VERSION_MAJOR, VSPTE_VERSION_MINOR, VSPTE_VERSION_REVISION, VSPTE_VERSION_BUILD
+#define VSPTE_VER_FILE_VERSION_STR        STRINGIFY(VSPTE_VERSION_MAJOR)    \
+                                      "." STRINGIFY(VSPTE_VERSION_MINOR)    \
+                                      "." STRINGIFY(VSPTE_VERSION_REVISION) \
+                                      "." STRINGIFY(VSPTE_VERSION_BUILD)    \
+
+#define VSPTE_VER_PRODUCTNAME_STR         "VSProjTypeExtractor"
+#define VSPTE_VER_PRODUCT_VERSION         VSPTE_VER_FILE_VERSION
+#define VSPTE_VER_PRODUCT_VERSION_STR     VSPTE_VER_FILE_VERSION_STR
+#define VSPTE_VER_ORIGINAL_FILENAME_STR   VSPTE_VER_PRODUCTNAME_STR ".dll"
+#define VSPTE_VER_INTERNAL_NAME_STR       VSPTE_VER_ORIGINAL_FILENAME_STR
+#define VSPTE_VER_LEGALCOPYRIGHT          "Copyright (C) 2019 Lucian Muresan"
+
+
+
+#define VSPROJ_TYPEEXTRACT_APIVERSION         VSPTE_VERSION_MINOR
+#define VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH     39
 
 // convenience code for the case when an application does not want to link against us
 #ifdef VSPROJTYPEEXTRACTOR_DYNLOAD
