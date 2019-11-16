@@ -30,10 +30,9 @@
 
 // convenience code for the case when an application does not want to link against us
 #ifdef VSPROJTYPEEXTRACTOR_DYNLOAD
-#include <Windows.h>
 
-typedef bool  (*Type_GetProjTypeGuidString)(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion);
-typedef void* (*Type_CleanUp)(void);
+typedef bool  (__stdcall *Type_GetProjTypeGuidString)(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion);
+typedef void* (__stdcall *Type_CleanUp)(void);
 
 class VspteModuleWrapper
 {
@@ -79,8 +78,8 @@ public:
 				_hVSProjTypeExtractor = ::LoadLibrary("VSProjTypeExtractor");
 				if (_hVSProjTypeExtractor)
 				{
-					_Vspte_GetProjTypeGuidString = (Type_GetProjTypeGuidString) ::GetProcAddress(_hVSProjTypeExtractor, "Vspte_GetProjTypeGuidString");
-					_Vspte_CleanUp = (Type_CleanUp) ::GetProcAddress(_hVSProjTypeExtractor, "Vspte_CleanUp");
+					_Vspte_GetProjTypeGuidString = reinterpret_cast<Type_GetProjTypeGuidString>(::GetProcAddress(_hVSProjTypeExtractor, "Vspte_GetProjTypeGuidString"));
+					_Vspte_CleanUp = reinterpret_cast<Type_CleanUp>(::GetProcAddress(_hVSProjTypeExtractor, "Vspte_CleanUp"));
 				}
 			}
 		}
@@ -154,7 +153,7 @@ public:
 			@param[in] projTypeGuidMaxLength maximum length of the project type GUID, if VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH is provided, only the first GUID is retrieved
 			@param[in] VS_MajorVersion major Visual Studio version to use
 		*/
-		bool CDECL_VSPROJTYPEEXTRACTOR Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion);
+		CDECL_VSPROJTYPEEXTRACTOR bool __stdcall Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion);
 
 		/** @brief  Optionally closes the volatile solution and quits the Visual Studio instance
 
@@ -162,7 +161,7 @@ public:
 			in order to save time in subsequent calls to @Vspte_GetProjTypeGuidString. Cleanup is done anyway on application exit, so calling it
 			explicitely is not necessary, it's provided more for testing purposes
 		*/
-		void CDECL_VSPROJTYPEEXTRACTOR Vspte_CleanUp();
+		CDECL_VSPROJTYPEEXTRACTOR void __stdcall Vspte_CleanUp();
 	}
 
 #endif
