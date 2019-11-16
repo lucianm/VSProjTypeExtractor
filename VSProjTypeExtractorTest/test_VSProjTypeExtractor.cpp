@@ -37,7 +37,7 @@ CTestF_VSProjTypeExtractor::CTestF_VSProjTypeExtractor()
 		}
 	}
 	strTestDataPath = std::string(binPath.begin(), binPath.begin() + dwRes);
-	size_t pos1 = strTestDataPath.find("\\VSProjTypeExtractorTest\\");
+	size_t pos1 = strTestDataPath.find("\\bin\\");
 	strTestDataPath = strTestDataPath.substr(0, pos1);
 	strTestDataPath += "\\VSProjTypeExtractorTest\\data";
 }

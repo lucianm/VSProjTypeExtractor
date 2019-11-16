@@ -17,8 +17,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <IntermediateOutputPath>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)\</IntermediateOutputPath>
-    <OutputPath>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)tmp\$(Platform)\$(Configuration)\$(RootNamespace)\</IntermediateOutputPath>
+    <OutputPath>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -27,8 +27,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <IntermediateOutputPath>$(ProjectDir)..\tmp\$(Platform)\$(Configuration)\$(RootNamespace)\</IntermediateOutputPath>
-    <OutputPath>$(ProjectDir)..\bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)tmp\$(Platform)\$(Configuration)\$(RootNamespace)\</IntermediateOutputPath>
+    <OutputPath>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -40,8 +40,12 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
       <HintPath>$(DevEnvDir)\PublicAssemblies\envdte.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp">
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="VSProjTypeWorker.cs" />

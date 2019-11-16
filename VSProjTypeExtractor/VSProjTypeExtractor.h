@@ -76,7 +76,7 @@ public:
 		try {
 			if (!_hVSProjTypeExtractor)
 			{
-				_hVSProjTypeExtractor = ::LoadLibrary(L"VSProjTypeExtractor");
+				_hVSProjTypeExtractor = ::LoadLibrary("VSProjTypeExtractor");
 				if (_hVSProjTypeExtractor)
 				{
 					_Vspte_GetProjTypeGuidString = (Type_GetProjTypeGuidString) ::GetProcAddress(_hVSProjTypeExtractor, "Vspte_GetProjTypeGuidString");
