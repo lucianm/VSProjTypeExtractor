@@ -34,15 +34,25 @@ bool Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsig
 {
 	bool bSuccess = false;
 	System::String^ strProjPath = gcnew System::String(projPath);
-	System::String^ strProjTypeGuid = VSProjTypeExtractor::ClassWorker::Instance->GetProjTypeGuidStringManaged(strProjPath, VS_MajorVersion);
+	try {
+		System::String^ strProjTypeGuid = VSProjTypeExtractor::ClassWorker::Instance->GetProjTypeGuidStringManaged(strProjPath, VS_MajorVersion);
 
-	if (strProjTypeGuid->Length >= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH - 1 && unsigned int (strProjTypeGuid->Length) <= projTypeGuidMaxLength)
+		if (strProjTypeGuid->Length >= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH - 1 && unsigned int(strProjTypeGuid->Length) <= projTypeGuidMaxLength)
+		{
+			msclr::interop::marshal_context^ context = gcnew msclr::interop::marshal_context();
+			const char* str = context->marshal_as<const char*>(strProjTypeGuid);
+			strcpy_s(projTypeGuid, projTypeGuidMaxLength, str);
+			delete context;
+			bSuccess = true;
+		}
+	}
+	catch (System::Exception^ e)
 	{
-		msclr::interop::marshal_context^ context = gcnew msclr::interop::marshal_context();
-		const char* str = context->marshal_as<const char*>(strProjTypeGuid);
-		strcpy_s(projTypeGuid, projTypeGuidMaxLength, str);
-		delete context;
-		bSuccess = true;
+		System::Console::WriteLine("\n{0}\noccured for project file '{1}' loaded in Visual Studio {2}", e->ToString(), strProjPath, VS_MajorVersion);
+		if (e->InnerException)
+		{
+			System::Console::WriteLine("\nInner exception: {0}\n", e->InnerException->ToString());
+		}
 	}
 	return bSuccess;
 }

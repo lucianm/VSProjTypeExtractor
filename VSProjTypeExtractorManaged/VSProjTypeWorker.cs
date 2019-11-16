@@ -50,7 +50,7 @@ namespace VSProjTypeExtractorManaged
             }
             catch (Exception ex)
             {
-                Console.WriteLine("\n{0}\n", ex.ToString());
+                Console.WriteLine("\n{0}\noccured for project file '{1}' loaded in Visual Studio {2}", ex.ToString(), projPath, VS_MajorVersion);
             }
             return projTypeGuid;
         }
