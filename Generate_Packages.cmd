@@ -3,7 +3,8 @@ SetLocal EnableExtensions
 SetLocal EnableDelayedExpansion
 
 set "packageName=VSProjTypeExtractor"
-set "BinariesDir=bin\x64\Release"
+set "BinariesSubdirRelease=bin\x64\Release"
+set "BinariesSubdirDebug=bin\x64\Debug"
 set "DirBinaryDist=tmp\Dist\BinaryDist"
 set "DirSdkDist=tmp\Dist\SdkDist"
 
@@ -12,13 +13,18 @@ rmdir /S /Q tmp\Dist
 del /F /Q %packageName%*.zip
 
 :: prepare directory structure
-for %%f in (%DirBinaryDist% %DirSdkDist%\bin %DirSdkDist%\include %DirSdkDist%\lib) do (
+for %%f in (%DirBinaryDist% %DirSdkDist%\%BinariesSubdirRelease% %DirSdkDist%\%BinariesSubdirDebug% %DirSdkDist%\include) do (
 	mkdir %%f
 )
 
 :: copy binaries
-copy %BinariesDir%\%packageName%*.dll %DirBinaryDist%
-copy %BinariesDir%\%packageName%*.dll %DirSdkDist%\bin
+copy %BinariesSubdirRelease%\%packageName%*.dll %DirBinaryDist%
+for %%f in (%BinariesSubdirRelease% %BinariesSubdirDebug%) do (
+	copy %%f\%packageName%*.dll %DirSdkDist%\%%f
+	copy %%f\%packageName%.pdb %DirSdkDist%\%%f
+	copy %%f\%packageName%Managed.pdb %DirSdkDist%\%%f
+	copy %%f\%packageName%.lib %DirSdkDist%\%%f
+)
 
 :: copy documentation
 copy LICENSE %DirBinaryDist%
@@ -29,11 +35,8 @@ copy *.md %DirSdkDist%
 :: copy header
 copy %packageName%\%packageName%.h %DirSdkDist%\include
 
-:: copy library
-copy %BinariesDir%\%packageName%.lib %DirSdkDist%\lib
-
 :: extract version from built DLL
-for /F "USEBACKQ" %%f in (`powershell -NoLogo -NoProfile -Command ^(Get-Item %BinariesDir%\%packageName%.dll^).VersionInfo.FileVersion`) do (set "packageVersion=%%f")
+for /F "USEBACKQ" %%f in (`powershell -NoLogo -NoProfile -Command ^(Get-Item %BinariesSubdirRelease%\%packageName%.dll^).VersionInfo.FileVersion`) do (set "packageVersion=%%f")
 
 :: compress binary and SDK distributions
 7z.exe a -mmt=%NUMBER_OF_PROCESSORS% -mx=9 -tzip %packageName%Binaries-%packageVersion%.zip .\%DirBinaryDist%\*

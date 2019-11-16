@@ -5,7 +5,7 @@
 #define STRINGIFY(s) STRINGIFY2(s)
 
 #define VSPTE_VERSION_MAJOR               0
-#define VSPTE_VERSION_MINOR               1
+#define VSPTE_VERSION_MINOR               2
 #define VSPTE_VERSION_REVISION            0
 #define VSPTE_VERSION_BUILD               0
 

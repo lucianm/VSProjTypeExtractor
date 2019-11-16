@@ -85,13 +85,16 @@ will be very quick;
 objects and garbage collection
 - sample code:
 ```
+#include <Windows.h>
 #define VSPROJTYPEEXTRACTOR_DYNLOAD
 #include <VSProjTypeExtractor.h>
 
-// load the module
-VspteModuleWrapper::Instance()->Load();
+if (!VspteModuleWrapper::Instance()->IsLoaded()) {
+	// load the module if not already loaded
+	VspteModuleWrapper::Instance()->Load();
+}
 
-// anytime before retrieving project guids, make sure to chjeck if loading succeeded:
+// anytime before retrieving project guids, make sure to check if loading succeeded:
 if (VspteModuleWrapper::Instance()->IsLoaded()) {
 	char projTypeGuid[VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH] = { 0 };
 	bool bSuccess = VspteModuleWrapper::Instance()->Vspte_GetProjTypeGuidString(
@@ -100,7 +103,7 @@ if (VspteModuleWrapper::Instance()->IsLoaded()) {
 		VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH,
 		16); // try with VS2019
 	if (bSuccess) {
-		// projTypeGuid will contain the project type Guid
+		// projTypeGuid will contain the project type Guid, use it where needed
 	}
 }
 

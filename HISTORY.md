@@ -1,5 +1,12 @@
 # VSProjTypeExtractor
 
+* v0.2.0.0 - published 2019.11.16:
+	 - improved error handling;
+	 - disabled unicode;
+	 - fixed header;
+	 - tuned deployment helper script;
+	 - updated [README.md](https://github.com/lucianm/VSProjTypeExtractor/blob/master/README.md);
+
 * v0.1.0.0 - published 2019.11.15:
 	 - provided a singleton `VspteModuleWrapper` in the
 	 [VSProjTypeExtractor.h](https://github.com/lucianm/VSProjTypeExtractor/blob/master/VSProjTypeExtractor/VSProjTypeExtractor.h)
