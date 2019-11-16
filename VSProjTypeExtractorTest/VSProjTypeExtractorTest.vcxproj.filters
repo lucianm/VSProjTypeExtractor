@@ -40,5 +40,11 @@
     <None Include="data\ExternalDummyProject.csproj">
       <Filter>data</Filter>
     </None>
+    <None Include="data\ExternalDummyProject_2.pyproj">
+      <Filter>data</Filter>
+    </None>
+    <None Include="data\ExternalDummyProject_3.wixproj">
+      <Filter>data</Filter>
+    </None>
   </ItemGroup>
 </Project>

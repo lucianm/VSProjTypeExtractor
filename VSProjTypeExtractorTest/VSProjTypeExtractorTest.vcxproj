@@ -101,6 +101,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="data\ExternalDummyProject.csproj" />
+    <None Include="data\ExternalDummyProject_2.pyproj" />
+    <None Include="data\ExternalDummyProject_3.wixproj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
