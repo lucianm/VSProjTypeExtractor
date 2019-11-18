@@ -7,13 +7,11 @@ Visual Studio project type GUID extractor
 
 **_VSProjTypeExtractor_** can be used in **[FASTBuild](http://fastbuild.org/docs/home.html)** together with the new
 _VSProjectExternal_ function to automatically determine the `ProjectTypeGuid` from the actual external visual studio
-project, instead of providing it in the BFF file. For this to happen, simply do not provide a value to
-`.ProjectTypeGuid`, like in the example below:
+project:
 ```
 VSProjectExternal( 'SomeExternal-vsproj' )
 {
 	.ExternalProjectPath = 'path_to\ExternalProject.csproj'
-	// .ProjectTypeGuid is not needed anymore
 }
 ```
 
@@ -32,6 +30,9 @@ functionality.
 [Releases](https://github.com/lucianm/VSProjTypeExtractor/releases) section will need this version of the .NET framework
 to be installed on your system. Just place them somewhere in the 'PATH' or along with FBuild.exe (a build supporting
 _VSProjectExternal_, post-v0.99 in any case) in the same directory.
+
+The module has a configuration file [VsProjTypeExtractorManaged.xml](https://github.com/lucianm/VSProjTypeExtractor/blob/master/VSProjTypeExtractorManaged/VsProjTypeExtractorManaged.xml),
+please have a look in the comments there if logging should be enabled (it is default off) or Visual Studio automation timing needs to be tuned.
 
 
 ## Developer information on integrating in applications
@@ -58,8 +59,7 @@ char projTypeGuid[VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH] = { 0 };
 bool bSuccess = Vspte_GetProjTypeGuidString(
 	charPtrToYourExternalProject,
 	projTypeGuid,
-	VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH,
-	16); // try with VS2019
+	VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH);
 if (bSuccess) {
 	// projTypeGuid will contain the project type Guid
 }
@@ -100,8 +100,7 @@ if (VspteModuleWrapper::Instance()->IsLoaded()) {
 	bool bSuccess = VspteModuleWrapper::Instance()->Vspte_GetProjTypeGuidString(
 		charPtrToYourExternalProject,
 		projTypeGuid,
-		VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH,
-		16); // try with VS2019
+		VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH);
 	if (bSuccess) {
 		// projTypeGuid will contain the project type Guid, use it where needed
 	}

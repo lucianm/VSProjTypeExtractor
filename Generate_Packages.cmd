@@ -17,13 +17,15 @@ for %%f in (%DirBinaryDist% %DirSdkDist%\%BinariesSubdirRelease% %DirSdkDist%\%B
 	mkdir %%f
 )
 
-:: copy binaries
+:: copy binaries & config
 copy %BinariesSubdirRelease%\%packageName%*.dll %DirBinaryDist%
+copy %BinariesSubdirRelease%\%packageName%Managed.xml %DirBinaryDist%
 for %%f in (%BinariesSubdirRelease% %BinariesSubdirDebug%) do (
 	copy %%f\%packageName%*.dll %DirSdkDist%\%%f
 	copy %%f\%packageName%.pdb %DirSdkDist%\%%f
 	copy %%f\%packageName%Managed.pdb %DirSdkDist%\%%f
 	copy %%f\%packageName%.lib %DirSdkDist%\%%f
+	copy %%f\%packageName%Managed.xml %DirSdkDist%\%%f
 )
 
 :: copy documentation

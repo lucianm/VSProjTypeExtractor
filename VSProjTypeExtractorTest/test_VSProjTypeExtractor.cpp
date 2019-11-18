@@ -80,8 +80,7 @@ void CTestF_VSProjTypeExtractor::SingleExtractProjGuid(const char* projFileName,
 			bSuccess = VspteModuleWrapper::Instance()->Vspte_GetProjTypeGuidString(
 				strCurrentTestProjPath.c_str(),
 				projTypeGuid,
-				VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH,
-				16) /* try with VS2019 */
+				VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH)
 		);
 
 		lock.lock();

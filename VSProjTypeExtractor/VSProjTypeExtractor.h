@@ -1,3 +1,32 @@
+/*
+    VSProjTypeExtractor - Visual Studio project type GUID extractor
+    VSProjTypeExtractor.h - Header File
+    Copyright (c) 2019, Lucian Muresan.
+
+    MIT License
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+    You can contact the author at :
+    - VSProjTypeExtractor homepage and source repository : https://github.com/lucianm/VSProjTypeExtractor
+*/
+
 #pragma once
 
 // some resource version defines
@@ -5,7 +34,7 @@
 #define STRINGIFY(s) STRINGIFY2(s)
 
 #define VSPTE_VERSION_MAJOR               0
-#define VSPTE_VERSION_MINOR               2
+#define VSPTE_VERSION_MINOR               3
 #define VSPTE_VERSION_REVISION            0
 #define VSPTE_VERSION_BUILD               0
 
@@ -31,7 +60,7 @@
 // convenience code for the case when an application does not want to link against us
 #ifdef VSPROJTYPEEXTRACTOR_DYNLOAD
 
-typedef bool  (__stdcall *Type_GetProjTypeGuidString)(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion);
+typedef bool  (__stdcall *Type_GetProjTypeGuidString)(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength);
 typedef void* (__stdcall *Type_CleanUp)(void);
 
 class VspteModuleWrapper
@@ -105,13 +134,12 @@ public:
 		@param[in] projPath path to visual studio project file
 		@param[in,out] projTypeGuid character string pre-allocated to the lenght provided in projTypeGuidMaxLength for receiving the project type GUID
 		@param[in] projTypeGuidMaxLength maximum length of the project type GUID, if VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH is provided, only the first GUID is retrieved
-		@param[in] VS_MajorVersion major Visual Studio version to use
 	*/
-	bool Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion)
+	bool Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength)
 	{
 		if (_Vspte_GetProjTypeGuidString)
 		{
-			return _Vspte_GetProjTypeGuidString(projPath, projTypeGuid, projTypeGuidMaxLength, VS_MajorVersion);
+			return _Vspte_GetProjTypeGuidString(projPath, projTypeGuid, projTypeGuidMaxLength);
 		}
 		else
 		{
@@ -151,9 +179,8 @@ public:
 			@param[in] projPath path to visual studio project file
 			@param[in,out] projTypeGuid character string pre-allocated to the lenght provided in projTypeGuidMaxLength for receiving the project type GUID
 			@param[in] projTypeGuidMaxLength maximum length of the project type GUID, if VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH is provided, only the first GUID is retrieved
-			@param[in] VS_MajorVersion major Visual Studio version to use
 		*/
-		CDECL_VSPROJTYPEEXTRACTOR bool __stdcall Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength, unsigned int VS_MajorVersion);
+		CDECL_VSPROJTYPEEXTRACTOR bool __stdcall Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength);
 
 		/** @brief  Optionally closes the volatile solution and quits the Visual Studio instance
 

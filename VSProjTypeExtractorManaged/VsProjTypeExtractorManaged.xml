@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+  <visual_studio>
+    <major_version>15</major_version><!--adapt this to the Visual Studio version installed and configured with all project types to be extracted-->
+    <save_volatile_solution>false</save_volatile_solution><!--if set to true, the volatile solution used to load the projects into will be saved to the user's TMP folder-->
+    <workaround_busy_app><!--often when controlling Visual Studio, the application may stay busy for a while, these values may help waiting enough to overcome the situation-->
+      <sleep_seconds_after_create_solution>5</sleep_seconds_after_create_solution>
+      <sleep_seconds_before_retry_project>5</sleep_seconds_before_retry_project>
+      <num_retries_project>3</num_retries_project>
+    </workaround_busy_app>
+  </visual_studio>
+  <logging>
+    <enable_console>false</enable_console>
+    <enable_logfile>false</enable_logfile>
+    <logfile_path></logfile_path><!--if the folder is not empty, this will be used instead of the user's TMP folder -->
+  </logging>
+</config>
