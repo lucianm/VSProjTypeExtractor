@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("VSProjTypeExtractor")]
-[assembly: AssemblyCopyright("Copyright ©  2019 Lucian Muresan")]
+[assembly: AssemblyCopyright("Copyright ©  2020 Lucian Muresan")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

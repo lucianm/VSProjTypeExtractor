@@ -1,7 +1,7 @@
 /*
     VSProjTypeExtractor - Visual Studio project type GUID extractor
     VSProjTypeExtractor.h - Header File
-    Copyright (c) 2019, Lucian Muresan.
+    Copyright (c) 2020, Lucian Muresan.
 
     MIT License
 
@@ -50,7 +50,7 @@
 #define VSPTE_VER_PRODUCT_VERSION_STR     VSPTE_VER_FILE_VERSION_STR
 #define VSPTE_VER_ORIGINAL_FILENAME_STR   VSPTE_VER_PRODUCTNAME_STR ".dll"
 #define VSPTE_VER_INTERNAL_NAME_STR       VSPTE_VER_ORIGINAL_FILENAME_STR
-#define VSPTE_VER_LEGALCOPYRIGHT          "Copyright (C) 2019 Lucian Muresan"
+#define VSPTE_VER_LEGALCOPYRIGHT          "Copyright (C) 2020 Lucian Muresan"
 
 
 

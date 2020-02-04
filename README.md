@@ -114,4 +114,4 @@ if (VspteModuleWrapper::Instance()->IsLoaded()) {
 
 ```
 
-© 2019 Lucian Muresan
+© 2020 Lucian Muresan
