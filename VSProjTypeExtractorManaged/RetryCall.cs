@@ -11,9 +11,9 @@ namespace VSProjTypeExtractorManaged
     public static class RetryCall
     {
         // call a delegate whith a parameter of type T and return of type T
-        public static T Do<T>(
-            Func<T, T> action,
-            T param,
+        public static EnvDTE.Project Do<String>(
+            Func<String, EnvDTE.Project> action,
+            String param,
             TimeSpan retryInterval,
             int maxAttemptCount = 3)
         {

@@ -32,6 +32,7 @@
 #include <msclr/marshal.h>
 #include <msclr/lock.h>
 #include <string.h>
+#include <fstream>
 
 
 
@@ -45,10 +46,10 @@ namespace VSProjTypeExtractor {
 		VSProjTypeExtractorManaged::VSProjTypeWorker m_managedWorker;
 	public:
 		static property ClassWorker^ Instance { ClassWorker^ get() { return % m_instance; } }
-		System::String^ GetProjTypeGuidStringManaged(System::String^ projPath)
+		VSProjTypeExtractorManaged::ExtractedProjData^ GetProjDataManaged(System::String^ projPath)
 		{
 			msclr::lock lock(this);
-			return m_managedWorker.ExtractProjectTypeGuid(projPath);
+			return m_managedWorker.ExtractProjectData(projPath);
 		}
 		void CleanUp()
 		{
@@ -59,18 +60,61 @@ namespace VSProjTypeExtractor {
 }
 
 
-bool Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsigned int projTypeGuidMaxLength)
+bool Vspte_GetProjData(const char* projPath, ExtractedProjData* projData)
 {
 	bool bSuccess = false;
+	if (!projData)
+	{
+		System::Console::WriteLine("Invalid argument, projData is a null pointer!!!");
+		return false;
+	}
+	if (!projPath)
+	{
+		System::Console::WriteLine("Invalid argument, projPath is a null pointer!!!");
+		return false;
+	}
+	else
+	{
+		std::ifstream test_if_exists(projPath);
+		if (!test_if_exists)
+		{
+			System::Console::WriteLine("Invalid argument, path '{0}' does not exist!!!", gcnew System::String(projPath));
+			return false;
+		}
+	}
+	
+	// clean out data
+	memset(projData, 0, sizeof(ExtractedProjData));
+
 	System::String^ strProjPath = gcnew System::String(projPath);
 	try {
-		System::String^ strProjTypeGuid = VSProjTypeExtractor::ClassWorker::Instance->GetProjTypeGuidStringManaged(strProjPath);
+		VSProjTypeExtractorManaged::ExtractedProjData^ ProjData = VSProjTypeExtractor::ClassWorker::Instance->GetProjDataManaged(strProjPath);
 
-		if (strProjTypeGuid->Length >= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH - 1 && unsigned int(strProjTypeGuid->Length) <= projTypeGuidMaxLength)
+		if (	ProjData->_TypeGuid->Length >= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH - 1 &&
+				unsigned int(ProjData->_TypeGuid->Length) <= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH )
 		{
 			msclr::interop::marshal_context^ context = gcnew msclr::interop::marshal_context();
-			const char* str = context->marshal_as<const char*>(strProjTypeGuid);
-			strcpy_s(projTypeGuid, projTypeGuidMaxLength, str);
+			const char* str = context->marshal_as<const char*>(ProjData->_TypeGuid);
+			strcpy_s(projData->_TypeGuid, VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH, str);
+
+			// if there are any config/platforms at all:
+			if (ProjData->_ConfigsPlatforms && ProjData->_ConfigsPlatforms->Length > 0)
+			{
+				projData->_numCfgPlatforms = ProjData->_ConfigsPlatforms->Length;
+				projData->_pConfigsPlatforms = new ExtractedCfgPlatform[projData->_numCfgPlatforms];
+
+				for (unsigned int i = 0; i < projData->_numCfgPlatforms; i++)
+				{
+					memset(&projData->_pConfigsPlatforms[i], 0, sizeof(ExtractedCfgPlatform));
+
+					str = context->marshal_as<const char*>(ProjData->_ConfigsPlatforms[i]->_config);
+					strcpy_s(projData->_pConfigsPlatforms[i]._config, VSPROJ_MAXSTRING_LENGTH, str);
+
+					str = context->marshal_as<const char*>(ProjData->_ConfigsPlatforms[i]->_platform);
+					strcpy_s(projData->_pConfigsPlatforms[i]._platform, VSPROJ_MAXSTRING_LENGTH, str);
+				}
+			}
+
 			delete context;
 			bSuccess = true;
 		}
@@ -84,6 +128,18 @@ bool Vspte_GetProjTypeGuidString(const char* projPath, char* projTypeGuid, unsig
 		}
 	}
 	return bSuccess;
+}
+
+void Vspte_DeallocateProjDataCfgArray(ExtractedProjData* projData)
+{
+	if (!projData)
+	{
+		System::Console::WriteLine("Invalid argument, projData is a null pointer!!!");
+		return;
+	}
+
+	delete[] projData->_pConfigsPlatforms;
+	projData->_numCfgPlatforms = 0;
 }
 
 void Vspte_CleanUp()

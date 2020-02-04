@@ -15,7 +15,7 @@ protected:
 	static void SetUpTestCase(void);
 	static void TearDownTestCase(void);
 
-	static void SingleExtractProjGuid(const char* projFileName, const char* testProjTypeGuid, const char* testProjTypeName);
+	static void SingleExtractProjData(const char* projFileName, const char* testProjTypeGuid, const char* testProjTypeName);
 
 	static std::string strTestDataPath;
 	static std::mutex mtxCout;

@@ -35,6 +35,9 @@
     <ClInclude Include="test_VSProjTypeExtractor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VSProjLoaderInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\ExternalDummyProject.csproj">

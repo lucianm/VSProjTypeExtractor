@@ -31,9 +31,42 @@ using System;
 using EnvDTE;
 using System.Reflection;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace VSProjTypeExtractorManaged
 {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public class ConfigPlatform
+    {
+        public String _config;
+        public String _platform;
+
+        public ConfigPlatform(String config, String platform)
+        {
+            this._config = config;
+            this._platform = platform;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public class ExtractedProjData
+    {
+        public String _TypeGuid;
+        //public String _Guid;
+        public ConfigPlatform[] _ConfigsPlatforms;
+
+        public void AddConfigPlatform(String config, String platform)
+        {
+            int newArraySize = 1;
+            if (this._ConfigsPlatforms != null)
+            {
+                newArraySize += this._ConfigsPlatforms.Length;
+            }
+            Array.Resize(ref this._ConfigsPlatforms, newArraySize);
+            this._ConfigsPlatforms[newArraySize - 1] = new ConfigPlatform(config, platform);
+        }
+    }
+
     public class VSProjTypeWorker
     {
         private DTE _dte;
@@ -107,9 +140,9 @@ namespace VSProjTypeExtractorManaged
             }
         }
 
-        public string ExtractProjectTypeGuid(string projPath)
+        public ExtractedProjData ExtractProjectData(string projPath)
         {
-            string projTypeGuid = "";
+            ExtractedProjData projData = new ExtractedProjData();
             try
             {
                 if (!conlog.IsInitialized())
@@ -135,7 +168,8 @@ namespace VSProjTypeExtractorManaged
                     _dte.Solution.Create(Path.GetTempPath(), _timeStampPrefix + "_" + _assemblyName + ".sln");
                     _bDteInstanciated = true;
 
-                    // wait 5 more seconds
+                    // wait 5 more seconds TODO: check again  at some point, if this can be done more elegant by registering a message filter to
+                    // handle busy call errors https://docs.microsoft.com/en-us/previous-versions/ms228772(v=vs.140)?redirectedfrom=MSDN
                     System.Threading.Thread.Sleep(1000 * _solutionSleepAfterCreate);
                     conlog.WriteLine(_assemblyName + ".sln created");
                 }
@@ -145,20 +179,31 @@ namespace VSProjTypeExtractorManaged
                 {
                     // retry loading the project into solution several times, because sometimes at the first attempt we might get
                     // System.Runtime.InteropServices.COMException with RPC_E_SERVERCALL_RETRYLATER
-                    Func<string, string> AddProjectGetTypeGuid = delegate (string path)
+                    Func<string, Project> AddProjectGetTypeGuid = delegate (string path)
                     {
                         Project projLoaded = _dte.Solution.AddFromFile(path);
                         conlog.WriteLine("Project '" + path + "' loaded into " + _timeStampPrefix + "_" + _assemblyName + ".sln");
-                        return projLoaded.Kind.ToString();
+                        return projLoaded;
+                        //return projLoaded.Kind.ToString();
                     };
-                    projTypeGuid = RetryCall.Do<string>(AddProjectGetTypeGuid, projPath, TimeSpan.FromSeconds(_projRetryAfterSeconds), _projRetriesCount);
+                    Project myLoadedProject = RetryCall.Do<string>(AddProjectGetTypeGuid, projPath, TimeSpan.FromSeconds(_projRetryAfterSeconds), _projRetriesCount);
+                    projData._TypeGuid = myLoadedProject.Kind.ToString();
+                    EnvDTE.Configurations projectConfigurations;
+                    foreach (object projectConfigurationName in (object[])myLoadedProject.ConfigurationManager.ConfigurationRowNames)
+                    {
+                        projectConfigurations = myLoadedProject.ConfigurationManager.ConfigurationRow(projectConfigurationName.ToString());
+                        foreach (EnvDTE.Configuration projectConfiguration in projectConfigurations)
+                        {
+                            projData.AddConfigPlatform(projectConfiguration.ConfigurationName, projectConfiguration.PlatformName);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 conlog.WriteLine("\n{0}\noccured for project file '{1}' loaded in Visual Studio {2}", ex.ToString(), projPath, _VS_MajorVersion);
             }
-            return projTypeGuid;
+            return projData;
         }
     }
 }
