@@ -1,5 +1,13 @@
 # VSProjTypeExtractor
 
+* v0.4.0.0 - published 2020.02.06:
+	 - removed all "convenience code" (around the `VspteModuleWrapper` in the
+	 [VSProjTypeExtractor.h](https://github.com/lucianm/VSProjTypeExtractor/blob/master/VSProjTypeExtractor/VSProjTypeExtractor.h)
+	 header for dynamic integration, as an alternative to statical linking, and just documenting it in the updated
+	 [README.md](https://github.com/lucianm/VSProjTypeExtractor/blob/master/README.md)), allowing for own implementations;
+	 - extended API to retrieve also config/platform pairs, dealocate array of such pairs from the new ExtractedProjData struct
+	 using the library's native runtime where it is also allocated;
+
 * v0.3.0.0 - published 2019.11.18:
 	 - added logging (default configured off) and a XML configuration file [VsProjTypeExtractorManaged.xml](https://github.com/lucianm/VSProjTypeExtractor/blob/master/VSProjTypeExtractorManaged/VsProjTypeExtractorManaged.xml);
 	 - made retrieving project type Guid more robust, as at the very first project in a list of many loaded into the volatile
