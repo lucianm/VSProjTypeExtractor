@@ -247,7 +247,7 @@ if (!VspteModuleWrapper::Instance()->IsLoaded()) {
 
 // anytime before retrieving project guids, make sure to check if loading succeeded:
 if (VspteModuleWrapper::Instance()->IsLoaded()) {
-	char projTypeGuid[VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH] = { 0 };
+	ExtractedProjData projData;
 	bool bSuccess = VspteModuleWrapper::Instance()->Vspte_GetProjData(
 		pathToYourExternalProject,
 		projData);
