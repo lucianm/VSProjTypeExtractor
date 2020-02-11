@@ -107,6 +107,16 @@ void CTestF_VSProjTypeExtractor::SingleExtractProjData(const char* projFileName,
 	}
 }
 
+//TEST_F(CTestF_VSProjTypeExtractor, tc_SingleThreadSingleProjectWiX)
+//{
+//	SingleExtractProjData("\\ExternalDummyProject_3.wixproj", "{930c7802-8a8c-48f9-8165-68863bccd9dd}", "WiX");
+//}
+
+TEST_F(CTestF_VSProjTypeExtractor, tc_SingleThreadSingleProjectPython)
+{
+	SingleExtractProjData("\\ExternalDummyProject_2.pyproj", "{888888a0-9f3d-457c-b088-3a5042f75d52}", "Python");
+}
+
 TEST_F(CTestF_VSProjTypeExtractor, tc_SingleThreadFailures)
 {
 	if (VspteModuleWrapper::Instance()->IsLoaded())
@@ -143,6 +153,16 @@ TEST_F(CTestF_VSProjTypeExtractor, tc_SingleThreadFailures)
 				strCurrentTestProjPath.c_str(),
 				&projData)
 		);
+
+		strCurrentTestProjPath = strTestDataPath + "\\ExternalDummyProject_3.wixproj";
+		lock.lock();
+		MYTEST_COUT << "Extracting project data from some projects just FAIL" << std::endl;
+		lock.unlock();
+		EXPECT_FALSE(
+			VspteModuleWrapper::Instance()->Vspte_GetProjData(
+				strCurrentTestProjPath.c_str(),
+				&projData)
+		);
 	}
 }
 
@@ -155,7 +175,7 @@ TEST_F(CTestF_VSProjTypeExtractor, tc_SingleThreadMultipleProjects)
 {
 	SingleExtractProjData("\\ExternalDummyProject.csproj", "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}", "C#");
 	SingleExtractProjData("\\ExternalDummyProject_2.pyproj", "{888888a0-9f3d-457c-b088-3a5042f75d52}", "Python");
-	SingleExtractProjData("\\ExternalDummyProject_3.wixproj", "{930c7802-8a8c-48f9-8165-68863bccd9dd}", "WiX");
+	//SingleExtractProjData("\\ExternalDummyProject_3.wixproj", "{930c7802-8a8c-48f9-8165-68863bccd9dd}", "WiX");
 }
 
 TEST_F(CTestF_VSProjTypeExtractor, tc_MultipleThreadsMultipleProjects)
@@ -164,11 +184,11 @@ TEST_F(CTestF_VSProjTypeExtractor, tc_MultipleThreadsMultipleProjects)
 
 	std::thread proj_1(&SingleExtractProjData, "\\ExternalDummyProject.csproj", "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}", "C#");
 	std::thread proj_2(&SingleExtractProjData, "\\ExternalDummyProject_2.pyproj", "{888888a0-9f3d-457c-b088-3a5042f75d52}", "Python");
-	std::thread proj_3(&SingleExtractProjData, "\\ExternalDummyProject_3.wixproj", "{930c7802-8a8c-48f9-8165-68863bccd9dd}", "WiX");
+	//std::thread proj_3(&SingleExtractProjData, "\\ExternalDummyProject_3.wixproj", "{930c7802-8a8c-48f9-8165-68863bccd9dd}", "WiX");
 
 	proj_1.join();
 	proj_2.join();
-	proj_3.join();
+	//proj_3.join();
 
 	MYTEST_COUT << "Parallel extraction of project type GUIDs completed." << std::endl;
 }

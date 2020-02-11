@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConAndLog.cs" />
+    <Compile Include="MessageFilter.cs" />
     <Compile Include="RetryCall.cs" />
     <Compile Include="SimpleXmlCfgReader.cs" />
     <Compile Include="VSProjTypeWorker.cs" />

@@ -129,20 +129,34 @@ namespace VSProjTypeExtractorManaged
         {
             if (_bDteInstanciated)
             {
-                _dte.Solution.Close(_saveVolatileSln);
-                conlog.WriteLine("Closed " + _timeStampPrefix + "_" + _assemblyName + ".sln");
-                _dte.Quit();
+                Func<bool> CloseSolutionAndDte = delegate ()
+                {
+                    _dte.Solution.Close(_saveVolatileSln);
+                    conlog.WriteLine("Closed " + _timeStampPrefix + "_" + _assemblyName + ".sln");
+                    _dte.Quit();
+                    return true;
+                };
+
+                RetryCall.Do<bool>(CloseSolutionAndDte, TimeSpan.FromSeconds(_projRetryAfterSeconds), _projRetriesCount);
                 conlog.WriteLine("Closed Visual Studio instance");
                 _bDteInstanciated = false;
                 // and turn off the IOleMessageFilter
-                // MessageFilter.Revoke();
+                MessageFilter.Revoke();
                 conlog.CloseLogging();
+
+                //_dte.Solution.Close(_saveVolatileSln);
+                //conlog.WriteLine("Closed " + _timeStampPrefix + "_" + _assemblyName + ".sln");
+                //_dte.Quit();
+                //conlog.WriteLine("Closed Visual Studio instance");
+                //_bDteInstanciated = false;
+                //// and turn off the IOleMessageFilter
+                //// MessageFilter.Revoke();
+                //conlog.CloseLogging();
             }
         }
 
-        public ExtractedProjData ExtractProjectData(string projPath)
+        public bool ExtractProjectData(string projPath, ref ExtractedProjData projData)
         {
-            ExtractedProjData projData = new ExtractedProjData();
             try
             {
                 if (!conlog.IsInitialized())
@@ -158,7 +172,7 @@ namespace VSProjTypeExtractorManaged
                     _dte = Activator.CreateInstance(visualStudioType) as DTE;
 
                     // Register the IOleMessageFilter to handle any threading errors
-                    // MessageFilter.Register();
+                    MessageFilter.Register();
 
                     _dte.MainWindow.Visible = false;
                     _dte.SuppressUI = true;
@@ -174,19 +188,18 @@ namespace VSProjTypeExtractorManaged
                     conlog.WriteLine(_assemblyName + ".sln created");
                 }
 
-                // add project to retrieve its type Guid
+                // add project to retrieve its type Guid and configurations if possible
                 if (_bDteInstanciated)
                 {
                     // retry loading the project into solution several times, because sometimes at the first attempt we might get
                     // System.Runtime.InteropServices.COMException with RPC_E_SERVERCALL_RETRYLATER
-                    Func<string, Project> AddProjectGetTypeGuid = delegate (string path)
+                    Func<string, EnvDTE.Project> AddProjectFromFile = delegate (string path)
                     {
                         Project projLoaded = _dte.Solution.AddFromFile(path);
                         conlog.WriteLine("Project '" + path + "' loaded into " + _timeStampPrefix + "_" + _assemblyName + ".sln");
                         return projLoaded;
-                        //return projLoaded.Kind.ToString();
                     };
-                    Project myLoadedProject = RetryCall.Do<string>(AddProjectGetTypeGuid, projPath, TimeSpan.FromSeconds(_projRetryAfterSeconds), _projRetriesCount);
+                    EnvDTE.Project myLoadedProject = RetryCall.Do<string>(AddProjectFromFile, projPath, TimeSpan.FromSeconds(_projRetryAfterSeconds), _projRetriesCount);
                     projData._TypeGuid = myLoadedProject.Kind.ToString();
                     EnvDTE.Configurations projectConfigurations;
                     foreach (object projectConfigurationName in (object[])myLoadedProject.ConfigurationManager.ConfigurationRowNames)
@@ -197,13 +210,15 @@ namespace VSProjTypeExtractorManaged
                             projData.AddConfigPlatform(projectConfiguration.ConfigurationName, projectConfiguration.PlatformName);
                         }
                     }
+                    return true;
                 }
+                return false;
             }
             catch (Exception ex)
             {
                 conlog.WriteLine("\n{0}\noccured for project file '{1}' loaded in Visual Studio {2}", ex.ToString(), projPath, _VS_MajorVersion);
+                return false;
             }
-            return projData;
         }
     }
 }

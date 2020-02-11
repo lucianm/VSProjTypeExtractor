@@ -46,10 +46,10 @@ namespace VSProjTypeExtractor {
 		VSProjTypeExtractorManaged::VSProjTypeWorker m_managedWorker;
 	public:
 		static property ClassWorker^ Instance { ClassWorker^ get() { return % m_instance; } }
-		VSProjTypeExtractorManaged::ExtractedProjData^ GetProjDataManaged(System::String^ projPath)
+		boolean GetProjDataManaged(System::String^ projPath, VSProjTypeExtractorManaged::ExtractedProjData^ projData)
 		{
 			msclr::lock lock(this);
-			return m_managedWorker.ExtractProjectData(projPath);
+			return m_managedWorker.ExtractProjectData(projPath, projData);
 		}
 		void CleanUp()
 		{
@@ -88,9 +88,11 @@ bool Vspte_GetProjData(const char* projPath, ExtractedProjData* projData)
 
 	System::String^ strProjPath = gcnew System::String(projPath);
 	try {
-		VSProjTypeExtractorManaged::ExtractedProjData^ ProjData = VSProjTypeExtractor::ClassWorker::Instance->GetProjDataManaged(strProjPath);
+		VSProjTypeExtractorManaged::ExtractedProjData^ ProjData = gcnew VSProjTypeExtractorManaged::ExtractedProjData();
+		bSuccess = VSProjTypeExtractor::ClassWorker::Instance->GetProjDataManaged(strProjPath, ProjData);
 
-		if (	ProjData->_TypeGuid->Length >= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH - 1 &&
+		if (	bSuccess &&
+				ProjData->_TypeGuid->Length >= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH - 1 &&
 				unsigned int(ProjData->_TypeGuid->Length) <= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH )
 		{
 			msclr::interop::marshal_context^ context = gcnew msclr::interop::marshal_context();
