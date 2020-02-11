@@ -1,5 +1,8 @@
 # VSProjTypeExtractor
 
+* v0.5.0.0 - published 2020.02.11:
+	 - calling Vspte_GetProjData will fail also if project configuration / platform pairs could not be retrieved;
+
 * v0.4.0.0 - published 2020.02.06:
 	 - removed all "convenience code" (around the `VspteModuleWrapper` in the
 	 [VSProjTypeExtractor.h](https://github.com/lucianm/VSProjTypeExtractor/blob/master/VSProjTypeExtractor/VSProjTypeExtractor.h)
