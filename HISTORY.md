@@ -1,5 +1,8 @@
 # VSProjTypeExtractor
 
+* v0.6.0.0 - published 2020.02.27:
+	 - improved locking in VSProjTypeExtractor.cpp;
+
 * v0.5.0.0 - published 2020.02.11:
 	 - calling Vspte_GetProjData will fail also if project configuration / platform pairs could not be retrieved;
 

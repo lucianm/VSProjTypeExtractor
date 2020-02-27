@@ -44,16 +44,17 @@ namespace VSProjTypeExtractor {
 		ClassWorker(const ClassWorker%) { throw gcnew System::InvalidOperationException("ClassWorker cannot be copy-constructed"); }
 		static ClassWorker m_instance;
 		VSProjTypeExtractorManaged::VSProjTypeWorker m_managedWorker;
+		System::Object m_LockableObject;
 	public:
 		static property ClassWorker^ Instance { ClassWorker^ get() { return % m_instance; } }
 		boolean GetProjDataManaged(System::String^ projPath, VSProjTypeExtractorManaged::ExtractedProjData^ projData)
 		{
-			msclr::lock lock(this);
+			msclr::lock lock(%m_LockableObject);
 			return m_managedWorker.ExtractProjectData(projPath, projData);
 		}
 		void CleanUp()
 		{
-			msclr::lock lock(this);
+			msclr::lock lock(%m_LockableObject);
 			m_managedWorker.CleanUp();
 		}
 	};
