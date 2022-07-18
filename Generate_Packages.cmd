@@ -9,23 +9,22 @@ set "DirBinaryDist=tmp\Dist\BinaryDist"
 set "DirSdkDist=tmp\Dist\SdkDist"
 
 :: initial cleanup
-rmdir /S /Q tmp\Dist
 del /F /Q %packageName%*.zip
 
 :: prepare directory structure
 for %%f in (%DirBinaryDist% %DirSdkDist%\%BinariesSubdirRelease% %DirSdkDist%\%BinariesSubdirDebug% %DirSdkDist%\include) do (
-	mkdir %%f
+    mkdir %%f
 )
 
 :: copy binaries & config
 copy %BinariesSubdirRelease%\%packageName%*.dll %DirBinaryDist%
-copy %BinariesSubdirRelease%\%packageName%Managed.xml %DirBinaryDist%
+copy %packageName%Managed\%packageName%Managed.xml %DirBinaryDist%
 for %%f in (%BinariesSubdirRelease% %BinariesSubdirDebug%) do (
-	copy %%f\%packageName%*.dll %DirSdkDist%\%%f
-	copy %%f\%packageName%.pdb %DirSdkDist%\%%f
-	copy %%f\%packageName%Managed.pdb %DirSdkDist%\%%f
-	copy %%f\%packageName%.lib %DirSdkDist%\%%f
-	copy %%f\%packageName%Managed.xml %DirSdkDist%\%%f
+    copy %%f\%packageName%*.dll %DirSdkDist%\%%f
+    copy %%f\%packageName%.pdb %DirSdkDist%\%%f
+    copy %%f\%packageName%Managed.pdb %DirSdkDist%\%%f
+    copy %%f\%packageName%.lib %DirSdkDist%\%%f
+    copy %packageName%Managed\%packageName%Managed.xml %DirSdkDist%\%%f
 )
 
 :: copy documentation
@@ -48,3 +47,5 @@ for /F "USEBACKQ" %%f in (`powershell -NoLogo -NoProfile -Command ^(Get-Item %Bi
 rmdir /S /Q tmp\Dist
 
 EndLocal
+
+pause

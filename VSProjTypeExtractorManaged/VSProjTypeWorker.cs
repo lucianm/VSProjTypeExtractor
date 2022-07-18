@@ -80,6 +80,7 @@ namespace VSProjTypeExtractorManaged
         private string _assemblyFolder;
         private string _timeStampPrefix = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fff");
         private bool _saveVolatileSln = false;
+        private bool _showVisualStudio = false;
         ConAndLog.OutMode _outModeLogging = ConAndLog.OutMode.OutNone;
         private string _strLogPath;
 
@@ -110,6 +111,7 @@ namespace VSProjTypeExtractorManaged
                 // the rest of settings
                 _VS_MajorVersion = Convert.ToInt32(cfgFile.GetTextValueAtNode("config/visual_studio/major_version", Convert.ToString(_VS_MajorVersion)));
                 _saveVolatileSln = Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/visual_studio/save_volatile_solution", Convert.ToString(_saveVolatileSln)));
+                _showVisualStudio = Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/visual_studio/show_UI", Convert.ToString(_showVisualStudio)));
                 _solutionSleepAfterCreate = Convert.ToInt32(cfgFile.GetTextValueAtNode("config/visual_studio/workaround_busy_app/sleep_seconds_after_create_solution", Convert.ToString(_solutionSleepAfterCreate)));
                 _projRetriesCount = Convert.ToInt32(cfgFile.GetTextValueAtNode("config/visual_studio/workaround_busy_app/num_retries_project", Convert.ToString(_projRetriesCount)));
                 _projRetryAfterSeconds = Convert.ToDouble(cfgFile.GetTextValueAtNode("config/visual_studio/workaround_busy_app/sleep_seconds_before_retry_project", Convert.ToString(_projRetryAfterSeconds)));
@@ -174,9 +176,9 @@ namespace VSProjTypeExtractorManaged
                     // Register the IOleMessageFilter to handle any threading errors
                     MessageFilter.Register();
 
-                    _dte.MainWindow.Visible = false;
-                    _dte.SuppressUI = true;
-                    _dte.UserControl = false;
+                    _dte.MainWindow.Visible = _showVisualStudio;
+                    _dte.SuppressUI = !_showVisualStudio;
+                    _dte.UserControl = _showVisualStudio;
                     conlog.WriteLine("Instanciated " + VisualStudioDTEVerString);
 
                     _dte.Solution.Create(Path.GetTempPath(), _timeStampPrefix + "_" + _assemblyName + ".sln");

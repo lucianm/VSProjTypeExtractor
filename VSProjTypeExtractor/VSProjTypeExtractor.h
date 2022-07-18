@@ -34,7 +34,7 @@
 #define VSPTE_STRINGIFY(s) VSPTE_STRINGIFY2(s)
 
 #define VSPTE_VERSION_MAJOR               0
-#define VSPTE_VERSION_MINOR               6
+#define VSPTE_VERSION_MINOR               7
 #define VSPTE_VERSION_REVISION            0
 #define VSPTE_VERSION_BUILD               0
 
