@@ -1,5 +1,13 @@
 # VSProjTypeExtractor
 
+* v0.8.0.0 - published 2023.10.19:
+    - switched configured Visual Studio version which is instrumented to 17 (2022);
+    - solution version bumped to 17;
+    - envdte reference replaced by Microsoft.VisualStudio.Interop;
+    - PlatformToolset in unmanaged projects bumped to v143;
+    - evaluating environment variable 'PROJTYPEXTRACT_VSVERSION' which takes precedence over the configured Visual Studio version (<major_version> in VsProjTypeExtractorManaged.xml);
+    - added .editorconfig;
+
 * v0.7.0.0 - published 2022.07.18:
     - switched configured Visual Studio version which is instrumented to 16 (2019);
     - added configuration possibility to temporarily show the Visual Studio UI during instrumentation, to be able to see messages,

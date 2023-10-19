@@ -18,9 +18,11 @@ for %%f in (%DirBinaryDist% %DirSdkDist%\%BinariesSubdirRelease% %DirSdkDist%\%B
 
 :: copy binaries & config
 copy %BinariesSubdirRelease%\%packageName%*.dll %DirBinaryDist%
+copy %BinariesSubdirRelease%\Microsoft.VisualStudio.*.dll %DirBinaryDist%
 copy %packageName%Managed\%packageName%Managed.xml %DirBinaryDist%
 for %%f in (%BinariesSubdirRelease% %BinariesSubdirDebug%) do (
     copy %%f\%packageName%*.dll %DirSdkDist%\%%f
+    copy %%f\Microsoft.VisualStudio.*.dll %DirSdkDist%\%%f
     copy %%f\%packageName%.pdb %DirSdkDist%\%%f
     copy %%f\%packageName%Managed.pdb %DirSdkDist%\%%f
     copy %%f\%packageName%.lib %DirSdkDist%\%%f
@@ -37,7 +39,7 @@ copy *.md %DirSdkDist%
 copy %packageName%\%packageName%.h %DirSdkDist%\include
 
 :: extract version from built DLL
-for /F "USEBACKQ" %%f in (`powershell -NoLogo -NoProfile -Command ^(Get-Item %BinariesSubdirRelease%\%packageName%.dll^).VersionInfo.FileVersion`) do (set "packageVersion=%%f")
+for /F "USEBACKQ" %%f in (`powershell -NoLogo -NoProfile -Command ^(Get-Item %BinariesSubdirRelease%\%packageName%Managed.dll^).VersionInfo.FileVersion`) do (set "packageVersion=%%f")
 
 :: compress binary and SDK distributions
 7z.exe a -mmt=%NUMBER_OF_PROCESSORS% -mx=9 -tzip %packageName%Binaries-%packageVersion%.zip .\%DirBinaryDist%\*

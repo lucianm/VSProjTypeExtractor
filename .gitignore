@@ -265,3 +265,4 @@ tmp/
 
 *.zip
 *.7z
+/enc_temp_folder

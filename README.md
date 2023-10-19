@@ -26,7 +26,7 @@ functionality.
 
 ## Requirements, Usage
 
-**_VSProjTypeExtractor_** targets .NET Framework v4.7.2, so the 2 DLLs which you can download from the
+**_VSProjTypeExtractor_** targets .NET Framework v4.8, so the 2 DLLs which you can download from the
 [Releases](https://github.com/lucianm/VSProjTypeExtractor/releases) section will need this version of the .NET framework
 to be installed on your system. Just place them somewhere in the 'PATH' or along with FBuild.exe (a build supporting
 _VSProjectExternal_, post-v0.99 in any case) in the same directory.
@@ -274,4 +274,4 @@ if (VspteModuleWrapper::Instance()->IsLoaded()) {
 
 ```
 
-© 2022 Lucian Muresan
+Copyright © 2019 - 2023 Lucian Mureșan

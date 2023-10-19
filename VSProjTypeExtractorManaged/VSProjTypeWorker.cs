@@ -1,4 +1,4 @@
-﻿/*
+/*
     VSProjTypeExtractor - Visual Studio project type GUID extractor
     VSProjTypeWorker.cs - Managed code implementation
     Copyright (c) 2019, Lucian Muresan.
@@ -110,6 +110,13 @@ namespace VSProjTypeExtractorManaged
 
                 // the rest of settings
                 _VS_MajorVersion = Convert.ToInt32(cfgFile.GetTextValueAtNode("config/visual_studio/major_version", Convert.ToString(_VS_MajorVersion)));
+                conlog.WriteLine("_VS_MajorVersion as read from config file      : " + Convert.ToString(_VS_MajorVersion));
+                Int32 verEnv = Convert.ToInt32(System.Environment.GetEnvironmentVariable("PROJTYPEXTRACT_VSVERSION"));
+                if (verEnv > 0)
+                {
+                    _VS_MajorVersion = verEnv;
+                    conlog.WriteLine("_VS_MajorVersion from PROJTYPEXTRACT_VSVERSION : " + Convert.ToString(_VS_MajorVersion));
+                }
                 _saveVolatileSln = Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/visual_studio/save_volatile_solution", Convert.ToString(_saveVolatileSln)));
                 _showVisualStudio = Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/visual_studio/show_UI", Convert.ToString(_showVisualStudio)));
                 _solutionSleepAfterCreate = Convert.ToInt32(cfgFile.GetTextValueAtNode("config/visual_studio/workaround_busy_app/sleep_seconds_after_create_solution", Convert.ToString(_solutionSleepAfterCreate)));

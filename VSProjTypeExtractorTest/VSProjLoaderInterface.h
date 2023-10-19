@@ -13,16 +13,16 @@
 // configuration / platform pair
 typedef struct
 {
-	char _config[VSPROJ_MAXSTRING_LENGTH];
-	char _platform[VSPROJ_MAXSTRING_LENGTH];
+    char _config[VSPROJ_MAXSTRING_LENGTH];
+    char _platform[VSPROJ_MAXSTRING_LENGTH];
 } ExtractedCfgPlatform;
 
 // extracted project data containing type GUID and array of found configuration / platform pairs
 typedef struct
 {
-	char _TypeGuid[VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH];
-	ExtractedCfgPlatform* _pConfigsPlatforms;
-	unsigned int _numCfgPlatforms;
+    char _TypeGuid[VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH];
+    ExtractedCfgPlatform* _pConfigsPlatforms;
+    unsigned int _numCfgPlatforms;
 } ExtractedProjData;
 
 // prototypes of exported functions
@@ -36,113 +36,113 @@ typedef void* (__stdcall *Type_DeallocateProjDataCfgArray)(ExtractedProjData* pP
 class VspteModuleWrapper
 {
 private:
-	VspteModuleWrapper()
-	{}
-	~VspteModuleWrapper()
-	{
-		if (_hVSProjTypeExtractor)
-		{
-			Vspte_CleanUp();
-			::FreeLibrary(_hVSProjTypeExtractor);
-			//
-			_hVSProjTypeExtractor = NULL;
-			_Vspte_GetProjData = nullptr;
-			_Vspte_CleanUp = nullptr;
-			_Vspte_DeallocateProjDataCfgArray = nullptr;
-		}
-	}
-	Type_GetProjData _Vspte_GetProjData = nullptr;
-	Type_CleanUp _Vspte_CleanUp = nullptr;
-	Type_DeallocateProjDataCfgArray _Vspte_DeallocateProjDataCfgArray = nullptr;
-	HMODULE _hVSProjTypeExtractor = NULL;
+    VspteModuleWrapper()
+    {}
+    ~VspteModuleWrapper()
+    {
+        if (_hVSProjTypeExtractor)
+        {
+            Vspte_CleanUp();
+            ::FreeLibrary(_hVSProjTypeExtractor);
+            //
+            _hVSProjTypeExtractor = NULL;
+            _Vspte_GetProjData = nullptr;
+            _Vspte_CleanUp = nullptr;
+            _Vspte_DeallocateProjDataCfgArray = nullptr;
+        }
+    }
+    Type_GetProjData _Vspte_GetProjData = nullptr;
+    Type_CleanUp _Vspte_CleanUp = nullptr;
+    Type_DeallocateProjDataCfgArray _Vspte_DeallocateProjDataCfgArray = nullptr;
+    HMODULE _hVSProjTypeExtractor = NULL;
 
 
 public:
-	/** @brief  Access to singleton
+    /** @brief  Access to singleton
 
-	*/
-	static VspteModuleWrapper* Instance()
-	{
-		static VspteModuleWrapper s_Instance;
-		return &s_Instance;
-	}
+    */
+    static VspteModuleWrapper* Instance()
+    {
+        static VspteModuleWrapper s_Instance;
+        return &s_Instance;
+    }
 
-	/** @brief  Loads VSProjTypeExtractor.dll if possible
+    /** @brief  Loads VSProjTypeExtractor.dll if possible
 
-		Needs to be called once before attempting to call @Vspte_GetProjData, @Vspte_DeallocateProjDataCfgArray or @Vspte_CleanUp
-	*/
-	void Load()
-	{
-		try {
-			if (!_hVSProjTypeExtractor)
-			{
-				_hVSProjTypeExtractor = ::LoadLibrary("VSProjTypeExtractor");
-				if (_hVSProjTypeExtractor)
-				{
-					_Vspte_GetProjData = reinterpret_cast<Type_GetProjData>(::GetProcAddress(_hVSProjTypeExtractor, "Vspte_GetProjData"));
-					_Vspte_CleanUp = reinterpret_cast<Type_CleanUp>(::GetProcAddress(_hVSProjTypeExtractor, "Vspte_CleanUp"));
-					_Vspte_DeallocateProjDataCfgArray = reinterpret_cast<Type_DeallocateProjDataCfgArray>(::GetProcAddress(_hVSProjTypeExtractor, "Vspte_DeallocateProjDataCfgArray"));
-				}
-			}
-		}
-		catch (...)
-		{
-		}
-	}
+        Needs to be called once before attempting to call @Vspte_GetProjData, @Vspte_DeallocateProjDataCfgArray or @Vspte_CleanUp
+    */
+    void Load()
+    {
+        try {
+            if (!_hVSProjTypeExtractor)
+            {
+                _hVSProjTypeExtractor = ::LoadLibrary("VSProjTypeExtractor");
+                if (_hVSProjTypeExtractor)
+                {
+                    _Vspte_GetProjData = reinterpret_cast<Type_GetProjData>(::GetProcAddress(_hVSProjTypeExtractor, "Vspte_GetProjData"));
+                    _Vspte_CleanUp = reinterpret_cast<Type_CleanUp>(::GetProcAddress(_hVSProjTypeExtractor, "Vspte_CleanUp"));
+                    _Vspte_DeallocateProjDataCfgArray = reinterpret_cast<Type_DeallocateProjDataCfgArray>(::GetProcAddress(_hVSProjTypeExtractor, "Vspte_DeallocateProjDataCfgArray"));
+                }
+            }
+        }
+        catch (...)
+        {
+        }
+    }
 
-	/** @brief  Queries if VSProjTypeExtractor.dll was successfully loaded
+    /** @brief  Queries if VSProjTypeExtractor.dll was successfully loaded
 
-		Helpful for avoiding to call @Vspte_GetProjData, @Vspte_DeallocateProjDataCfgArray or @Vspte_CleanUp without effect
-	*/
-	bool IsLoaded()
-	{
-		return _hVSProjTypeExtractor != NULL && _Vspte_GetProjData != nullptr && _Vspte_CleanUp != nullptr && _Vspte_DeallocateProjDataCfgArray != nullptr;
-	}
+        Helpful for avoiding to call @Vspte_GetProjData, @Vspte_DeallocateProjDataCfgArray or @Vspte_CleanUp without effect
+    */
+    bool IsLoaded()
+    {
+        return _hVSProjTypeExtractor != NULL && _Vspte_GetProjData != nullptr && _Vspte_CleanUp != nullptr && _Vspte_DeallocateProjDataCfgArray != nullptr;
+    }
 
-	/** @brief  Retrieves basic project data from an existing project
+    /** @brief  Retrieves basic project data from an existing project
 
-		The project data is extracted by silently automating the loading of the project in a volatile solution of a new,
-		hidden Visual Studio instance.
+        The project data is extracted by silently automating the loading of the project in a volatile solution of a new,
+        hidden Visual Studio instance.
 
-		@param[in] projPath path to visual studio project file
-		@param[in,out] pProjData for receiving the project type GUID and existing configurations
-	*/
-	bool Vspte_GetProjData(const char* projPath, ExtractedProjData* pProjData)
-	{
-		if (_Vspte_GetProjData)
-		{
-			return _Vspte_GetProjData(projPath, pProjData);
-		}
-		else
-		{
-			return false;
-		}
-	}
+        @param[in] projPath path to visual studio project file
+        @param[in,out] pProjData for receiving the project type GUID and existing configurations
+    */
+    bool Vspte_GetProjData(const char* projPath, ExtractedProjData* pProjData)
+    {
+        if (_Vspte_GetProjData)
+        {
+            return _Vspte_GetProjData(projPath, pProjData);
+        }
+        else
+        {
+            return false;
+        }
+    }
 
-	/** @brief  Deallocates the configurations / platforms array of an ExtractedProjData instance already used in a call to @Vspte_GetProjData
+    /** @brief  Deallocates the configurations / platforms array of an ExtractedProjData instance already used in a call to @Vspte_GetProjData
 
-		After a call to @Vspte_GetProjData and copying the data you're interested in from the ExtractedProjData object, you should call this
-		in order to deallocate the configurations / platforms array with the correct runtime
-	*/
-	void Vspte_DeallocateProjDataCfgArray(ExtractedProjData* pProjData)
-	{
-		if (_Vspte_DeallocateProjDataCfgArray)
-		{
-			_Vspte_DeallocateProjDataCfgArray(pProjData);
-		}
-	}
+        After a call to @Vspte_GetProjData and copying the data you're interested in from the ExtractedProjData object, you should call this
+        in order to deallocate the configurations / platforms array with the correct runtime
+    */
+    void Vspte_DeallocateProjDataCfgArray(ExtractedProjData* pProjData)
+    {
+        if (_Vspte_DeallocateProjDataCfgArray)
+        {
+            _Vspte_DeallocateProjDataCfgArray(pProjData);
+        }
+    }
 
-	/** @brief  Optionally closes the volatile solution and quits the Visual Studio instance
+    /** @brief  Optionally closes the volatile solution and quits the Visual Studio instance
 
-		After a call to @Vspte_GetProjData, the Visual Studio instance is kept up and running with the volatile solution loaded,
-		in order to save time in subsequent calls to @Vspte_GetProjData. Cleanup is done anyway on application exit, so calling it
-		explicitely is not necessary, it's provided more for testing purposes
-	*/
-	void Vspte_CleanUp()
-	{
-		if (_Vspte_CleanUp)
-		{
-			_Vspte_CleanUp();
-		}
-	}
+        After a call to @Vspte_GetProjData, the Visual Studio instance is kept up and running with the volatile solution loaded,
+        in order to save time in subsequent calls to @Vspte_GetProjData. Cleanup is done anyway on application exit, so calling it
+        explicitely is not necessary, it's provided more for testing purposes
+    */
+    void Vspte_CleanUp()
+    {
+        if (_Vspte_CleanUp)
+        {
+            _Vspte_CleanUp();
+        }
+    }
 };
