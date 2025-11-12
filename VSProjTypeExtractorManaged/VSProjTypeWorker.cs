@@ -107,15 +107,16 @@ namespace VSProjTypeExtractorManaged
                     _outModeLogging |= ConAndLog.OutMode.OutLogfile;
                 }
                 conlog.InitLogging(_outModeLogging, _strLogPath + "\\" + _timeStampPrefix + "_" + _assemblyName + ".log");
+                conlog.SetLogLevel(cfgFile.GetTextValueAtNode("config/logging/level", Convert.ToString(ConAndLog.LogLevel.DEBUG)));
 
                 // the rest of settings
                 _VS_MajorVersion = Convert.ToInt32(cfgFile.GetTextValueAtNode("config/visual_studio/major_version", Convert.ToString(_VS_MajorVersion)));
-                conlog.WriteLine("_VS_MajorVersion as read from config file      : " + Convert.ToString(_VS_MajorVersion));
+                conlog.WriteLineDebug("_VS_MajorVersion as read from config file      : " + Convert.ToString(_VS_MajorVersion));
                 Int32 verEnv = Convert.ToInt32(System.Environment.GetEnvironmentVariable("PROJTYPEXTRACT_VSVERSION"));
                 if (verEnv > 0)
                 {
                     _VS_MajorVersion = verEnv;
-                    conlog.WriteLine("_VS_MajorVersion from PROJTYPEXTRACT_VSVERSION : " + Convert.ToString(_VS_MajorVersion));
+                    conlog.WriteLineDebug("_VS_MajorVersion from PROJTYPEXTRACT_VSVERSION : " + Convert.ToString(_VS_MajorVersion));
                 }
                 _saveVolatileSln = Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/visual_studio/save_volatile_solution", Convert.ToString(_saveVolatileSln)));
                 _showVisualStudio = Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/visual_studio/show_UI", Convert.ToString(_showVisualStudio)));
@@ -125,7 +126,7 @@ namespace VSProjTypeExtractorManaged
             }
             catch (Exception e)
             {
-                conlog.WriteLine(e.Message);
+                conlog.WriteLineError(e.Message);
             }
         }
 
@@ -141,26 +142,17 @@ namespace VSProjTypeExtractorManaged
                 Func<bool> CloseSolutionAndDte = delegate ()
                 {
                     _dte.Solution.Close(_saveVolatileSln);
-                    conlog.WriteLine("Closed " + _timeStampPrefix + "_" + _assemblyName + ".sln");
+                    conlog.WriteLineInfo("Closed " + _timeStampPrefix + "_" + _assemblyName + ".sln");
                     _dte.Quit();
                     return true;
                 };
 
                 RetryCall.Do<bool>(CloseSolutionAndDte, TimeSpan.FromSeconds(_projRetryAfterSeconds), _projRetriesCount);
-                conlog.WriteLine("Closed Visual Studio instance");
+                conlog.WriteLineInfo("Closed Visual Studio instance");
                 _bDteInstanciated = false;
                 // and turn off the IOleMessageFilter
                 MessageFilter.Revoke();
                 conlog.CloseLogging();
-
-                //_dte.Solution.Close(_saveVolatileSln);
-                //conlog.WriteLine("Closed " + _timeStampPrefix + "_" + _assemblyName + ".sln");
-                //_dte.Quit();
-                //conlog.WriteLine("Closed Visual Studio instance");
-                //_bDteInstanciated = false;
-                //// and turn off the IOleMessageFilter
-                //// MessageFilter.Revoke();
-                //conlog.CloseLogging();
             }
         }
 
@@ -186,7 +178,7 @@ namespace VSProjTypeExtractorManaged
                     _dte.MainWindow.Visible = _showVisualStudio;
                     _dte.SuppressUI = !_showVisualStudio;
                     _dte.UserControl = _showVisualStudio;
-                    conlog.WriteLine("Instanciated " + VisualStudioDTEVerString);
+                    conlog.WriteLineInfo("Instanciated " + VisualStudioDTEVerString);
 
                     _dte.Solution.Create(Path.GetTempPath(), _timeStampPrefix + "_" + _assemblyName + ".sln");
                     _bDteInstanciated = true;
@@ -194,7 +186,7 @@ namespace VSProjTypeExtractorManaged
                     // wait 5 more seconds TODO: check again  at some point, if this can be done more elegant by registering a message filter to
                     // handle busy call errors https://docs.microsoft.com/en-us/previous-versions/ms228772(v=vs.140)?redirectedfrom=MSDN
                     System.Threading.Thread.Sleep(1000 * _solutionSleepAfterCreate);
-                    conlog.WriteLine(_assemblyName + ".sln created");
+                    conlog.WriteLineInfo(_assemblyName + ".sln created");
                 }
 
                 // add project to retrieve its type Guid and configurations if possible
@@ -205,7 +197,7 @@ namespace VSProjTypeExtractorManaged
                     Func<string, EnvDTE.Project> AddProjectFromFile = delegate (string path)
                     {
                         Project projLoaded = _dte.Solution.AddFromFile(path);
-                        conlog.WriteLine("Project '" + path + "' loaded into " + _timeStampPrefix + "_" + _assemblyName + ".sln");
+                        conlog.WriteLineInfo("Project '" + path + "' loaded into " + _timeStampPrefix + "_" + _assemblyName + ".sln");
                         return projLoaded;
                     };
                     EnvDTE.Project myLoadedProject = RetryCall.Do<string>(AddProjectFromFile, projPath, TimeSpan.FromSeconds(_projRetryAfterSeconds), _projRetriesCount);
@@ -225,7 +217,7 @@ namespace VSProjTypeExtractorManaged
             }
             catch (Exception ex)
             {
-                conlog.WriteLine("\n{0}\noccured for project file '{1}' loaded in Visual Studio {2}", ex.ToString(), projPath, _VS_MajorVersion);
+                conlog.WriteLineError("\n{0}\noccured for project file '{1}' loaded in Visual Studio {2}", ex.ToString(), projPath, _VS_MajorVersion);
                 return false;
             }
         }

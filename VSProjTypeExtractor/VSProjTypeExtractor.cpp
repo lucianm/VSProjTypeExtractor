@@ -58,6 +58,47 @@ namespace VSProjTypeExtractor {
             m_managedWorker.CleanUp();
         }
     };
+
+    public ref class ConsoleLogger
+    {
+    private:
+        ConsoleLogger() :
+            m_managedConLog(VSProjTypeExtractorManaged::ConAndLog::Instance)
+        {
+            m_LockableObject = gcnew System::Object();
+        }
+        ConsoleLogger(const ConsoleLogger%) { throw gcnew System::InvalidOperationException("ConsoleLogger cannot be copy-constructed"); }
+        static ConsoleLogger m_instance;
+        VSProjTypeExtractorManaged::ConAndLog^ m_managedConLog;
+        System::Object^ m_LockableObject;
+    public:
+        static property ConsoleLogger^ Instance { ConsoleLogger^ get() { return % m_instance; } }
+        void WriteLineDebug(System::String^ format, ... array<Object^>^ args)
+        {
+            //msclr::lock lock(m_LockableObject);
+            m_managedConLog->WriteLineDebug(format, args);
+        }
+        void WriteLineInfo(System::String^ format, ... array<Object^>^ args)
+        {
+            //msclr::lock lock(m_LockableObject);
+            m_managedConLog->WriteLineInfo(format, args);
+        }
+        void WriteLineWarn(System::String^ format, ... array<Object^>^ args)
+        {
+            //msclr::lock lock(m_LockableObject);
+            m_managedConLog->WriteLineWarn(format, args);
+        }
+        void WriteLineError(System::String^ format, ... array<Object^>^ args)
+        {
+            //msclr::lock lock(m_LockableObject);
+            m_managedConLog->WriteLineError(format, args);
+        }
+        void WriteLineFatal(System::String^ format, ... array<Object^>^ args)
+        {
+            //msclr::lock lock(m_LockableObject);
+            m_managedConLog->WriteLineFatal(format, args);
+        }
+    };
 }
 
 
@@ -66,12 +107,12 @@ bool Vspte_GetProjData(const char* projPath, ExtractedProjData* projData)
     bool bSuccess = false;
     if (!projData)
     {
-        System::Console::WriteLine("Invalid argument, projData is a null pointer!!!");
+        VSProjTypeExtractor::ConsoleLogger::Instance->WriteLineError("Invalid argument, projData is a null pointer!!!");
         return false;
     }
     if (!projPath)
     {
-        System::Console::WriteLine("Invalid argument, projPath is a null pointer!!!");
+        VSProjTypeExtractor::ConsoleLogger::Instance->WriteLineError("Invalid argument, projPath is a null pointer!!!");
         return false;
     }
     else
@@ -79,7 +120,7 @@ bool Vspte_GetProjData(const char* projPath, ExtractedProjData* projData)
         std::ifstream test_if_exists(projPath);
         if (!test_if_exists)
         {
-            System::Console::WriteLine("Invalid argument, path '{0}' does not exist!!!", gcnew System::String(projPath));
+            VSProjTypeExtractor::ConsoleLogger::Instance->WriteLineError("Invalid argument, path '{0}' does not exist!!!", gcnew System::String(projPath));
             return false;
         }
     }
@@ -124,10 +165,10 @@ bool Vspte_GetProjData(const char* projPath, ExtractedProjData* projData)
     }
     catch (System::Exception^ e)
     {
-        System::Console::WriteLine("\n{0}\noccured for project file '{1}' loaded in Visual Studio {2}", e->ToString(), strProjPath);
+        VSProjTypeExtractor::ConsoleLogger::Instance->WriteLineFatal("\n{0}\noccured for project file '{1}' loaded in Visual Studio {2}", e->ToString(), strProjPath);
         if (e->InnerException)
         {
-            System::Console::WriteLine("\nInner exception: {0}\n", e->InnerException->ToString());
+            VSProjTypeExtractor::ConsoleLogger::Instance->WriteLineFatal("\nInner exception: {0}\n", e->InnerException->ToString());
         }
     }
     return bSuccess;
@@ -137,7 +178,7 @@ void Vspte_DeallocateProjDataCfgArray(ExtractedProjData* projData)
 {
     if (!projData)
     {
-        System::Console::WriteLine("Invalid argument, projData is a null pointer!!!");
+        VSProjTypeExtractor::ConsoleLogger::Instance->WriteLineFatal("Invalid argument, projData is a null pointer!!!");
         return;
     }
 

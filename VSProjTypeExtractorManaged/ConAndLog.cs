@@ -1,4 +1,4 @@
-﻿/*
+/*
     VSProjTypeExtractor - Visual Studio project type GUID extractor
     ConAndLog.cs - Console and file logger
     Copyright (c) 2019, Lucian Muresan.
@@ -41,37 +41,72 @@ namespace VSProjTypeExtractorManaged
             OutConsole = 0x01,
             OutLogfile = 0x02
         };
+        public enum LogLevel
+        {
+            DEBUG,
+            INFO,
+            WARN,
+            ERROR,
+            FATAL
+        }
+
+        private static readonly Lazy<ConAndLog> lazy = new Lazy<ConAndLog>(() => new ConAndLog());
+        public static ConAndLog Instance => lazy.Value;
+
+        private LogLevel m_currentLevel = LogLevel.DEBUG; // default
+        private readonly object m_lock = new object();
 
         private string _filePath = "";
         private bool _FileIsOpen = false;
-        private static readonly Lazy<ConAndLog> lazy = new Lazy<ConAndLog>(() => new ConAndLog());
         private OutMode _outMode = OutMode.OutConsole;
-        public static ConAndLog Instance { get { return lazy.Value; } }
-        public StreamWriter _SW { get; set; }
-        public FileStream _ostrm { get; set; }
         private bool _IsInitialized = false;
 
         public bool IsInitialized() { return _IsInitialized; }
 
         private ConAndLog()
         {
+            Trace.AutoFlush = true;
         }
 
         ~ConAndLog()
         {
-            DisposeStreamWriter();
         }
 
-        public void WriteLine(string format, params Object[] args)
+        public void SetLogLevel(string levelName)
         {
-            string strFmtMsg = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + " - " + format;
-            Debug.WriteLine(strFmtMsg, args);
+            if (Enum.TryParse<LogLevel>(levelName, true, out var level))
+            {
+                m_currentLevel = level;
+            }
+            else
+            {
+                throw new ArgumentException($"Invalid log level: {levelName}");
+            }
         }
+
+        public void WriteLine(LogLevel level, string format, params Object[] args)
+        {
+            lock (m_lock)
+            {
+                if (level < m_currentLevel)
+                    return; // filtered out
+            }
+
+            string timestamp = DateTimeOffset.Now.ToString("o");
+            string strFmtMsg = $"{timestamp} - [{level}]: {format}";
+            Trace.WriteLine(string.Format(strFmtMsg, args));
+        }
+
+        public void WriteLineDebug(string format, params Object[] args) {WriteLine(LogLevel.DEBUG, format, args);}
+        public void WriteLineInfo(string format, params Object[] args) { WriteLine(LogLevel.INFO, format, args); }
+        public void WriteLineWarn(string format, params Object[] args) { WriteLine(LogLevel.WARN, format, args); }
+        public void WriteLineError(string format, params Object[] args) { WriteLine(LogLevel.ERROR, format, args); }
+        public void WriteLineFatal(string format, params Object[] args) { WriteLine(LogLevel.FATAL, format, args); }
 
         public void WriteLineRethrow(Exception ex, string format, params Object[] args)
         {
             String MsgExc = string.Format(format, args);
-            WriteLine(MsgExc + Environment.NewLine + "   EXCEPTION:" + ex.ToString() + Environment.NewLine);
+            WriteLineFatal(MsgExc + Environment.NewLine + "   EXCEPTION:" + ex.ToString() + Environment.NewLine);
             throw new ApplicationException(MsgExc, ex);
         }
 
@@ -79,23 +114,20 @@ namespace VSProjTypeExtractorManaged
         {
             _outMode = outMode;
             InstantiateStreamWriter(filePath);
-            WriteLine("START logging configured for {0} ...", _outMode);
+            WriteLineInfo("START logging configured for {0} ...", _outMode);
             _IsInitialized = true;
         }
 
         public void CloseLogging()
         {
-            WriteLine("STOP logging ...");
-            Debug.Flush();
-            Debug.Listeners.Clear();
+            WriteLineInfo("STOP logging ...");
+            Trace.Flush();
+            Trace.Listeners.Clear();
             _IsInitialized = false;
             try
             {
                 if (_FileIsOpen)
                 {
-                    _SW.Flush();
-                    _SW.Close();
-                    _ostrm.Close();
                     _FileIsOpen = false;
                 }
             }
@@ -105,42 +137,23 @@ namespace VSProjTypeExtractorManaged
             }
         }
 
-        private void DisposeStreamWriter()
-        {
-            if (_SW != null)
-            {
-                try
-                {
-                    _SW.Dispose();
-                }
-                catch (ObjectDisposedException) { } // object already disposed - ignore exception
-            }
-        }
-
         private void InstantiateStreamWriter(string filePath)
         {
-            DisposeStreamWriter();
             try
             {
                 if ((_outMode & OutMode.OutLogfile) == OutMode.OutLogfile)
                 {
                     // if logfile is active
                     EnsureLogDirectoryExists(Directory.GetParent(filePath).ToString());
-                    _ostrm = new FileStream(filePath, FileMode.OpenOrCreate | FileMode.Append, FileAccess.Write);
-                    _SW = new StreamWriter(_ostrm);
-                    _SW.AutoFlush = true;
+                    Trace.Listeners.Add(new TextWriterTraceListener(filePath));
                     _filePath = filePath;
                     _FileIsOpen = true;
-
-                    TextWriterTraceListener tr = new TextWriterTraceListener(_SW);
-                    Debug.Listeners.Add(tr);
                 }
 
                 if ((_outMode & OutMode.OutConsole) == OutMode.OutConsole)
                 {
                     // if console is active
-                    TextWriterTraceListener tr = new TextWriterTraceListener(System.Console.Out);
-                    Debug.Listeners.Add(tr);
+                    Trace.Listeners.Add(new ConsoleTraceListener());
                 }
             }
             catch (UnauthorizedAccessException ex)

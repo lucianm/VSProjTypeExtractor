@@ -1,4 +1,4 @@
-﻿/*
+/*
     VSProjTypeExtractor - Visual Studio project type GUID extractor
     SimpleXmlCfgReader.cs - simple configuration file reader
     Copyright (c) 2019, Lucian Muresan.
@@ -74,8 +74,8 @@ namespace VSProjTypeExtractorManaged
             }
             catch (Exception e)
             {
-                conlog.WriteLine("The value at xpath '" + strNodePath + "' could not be read:");
-                conlog.WriteLine(e.Message);
+                conlog.WriteLineError("The value at xpath '" + strNodePath + "' could not be read:");
+                conlog.WriteLineError(e.Message);
             }
             if (strValue == "")
             {

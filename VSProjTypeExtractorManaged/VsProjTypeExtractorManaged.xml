@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <config>
   <visual_studio>
     <major_version>17</major_version><!--adapt this to the Visual Studio version installed and configured with all project types to be extracted, this can also be overridden by the PROJTYPEXTRACT_VSVERSION-->
@@ -11,7 +11,9 @@
     </workaround_busy_app>
   </visual_studio>
   <logging>
-    <enable_console>false</enable_console>
+      <level>DEBUG</level>
+      <!--default value is DEBUG, higher levels can be: INFO, WARN, ERROR, FATAL-->
+    <enable_console>true</enable_console>
     <enable_logfile>false</enable_logfile>
     <logfile_path></logfile_path><!--if the folder is not empty, this will be used instead of the user's TMP folder -->
   </logging>
