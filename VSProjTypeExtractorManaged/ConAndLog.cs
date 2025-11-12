@@ -28,8 +28,10 @@
 */
 
 using System;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace VSProjTypeExtractorManaged
 {
@@ -49,6 +51,8 @@ namespace VSProjTypeExtractorManaged
             ERROR,
             FATAL
         }
+
+        private static readonly int _MaxLevelNameLength = Enum.GetNames(typeof(LogLevel)).Max(name => name.Length);
 
         private static readonly Lazy<ConAndLog> lazy = new Lazy<ConAndLog>(() => new ConAndLog());
         public static ConAndLog Instance => lazy.Value;
@@ -84,43 +88,116 @@ namespace VSProjTypeExtractorManaged
             }
         }
 
-        public void WriteLine(LogLevel level, string format, params Object[] args)
+        public void WriteLine(LogLevel level, string format, params object[] args)
         {
-            lock (m_lock)
-            {
-                if (level < m_currentLevel)
-                    return; // filtered out
-            }
+            if (level < m_currentLevel)
+                return;
 
             string timestamp = DateTimeOffset.Now.ToString("o");
-            string strFmtMsg = $"{timestamp} - [{level}]: {format}";
-            Trace.WriteLine(string.Format(strFmtMsg, args));
+            string levelStr = level.ToString().PadRight(_MaxLevelNameLength);
+            string strFmtMsg = $"{timestamp} - [{levelStr}]: {format}";
+
+            lock (m_lock)
+            {
+                Trace.WriteLine(string.Format(strFmtMsg, args));
+            }
         }
 
         public void WriteLineDebug(string format, params Object[] args) {WriteLine(LogLevel.DEBUG, format, args);}
+
         public void WriteLineInfo(string format, params Object[] args) { WriteLine(LogLevel.INFO, format, args); }
+
         public void WriteLineWarn(string format, params Object[] args) { WriteLine(LogLevel.WARN, format, args); }
+
         public void WriteLineError(string format, params Object[] args) { WriteLine(LogLevel.ERROR, format, args); }
+
         public void WriteLineFatal(string format, params Object[] args) { WriteLine(LogLevel.FATAL, format, args); }
+
+        public void WriteLineException(Exception ex, string format, params object[] args)
+        {
+            var sb = new StringBuilder();
+
+            // User-provided context
+            sb.AppendLine(string.Format(format, args) + ":");
+
+            int depth = 0;
+            Exception current = ex;
+
+            while (current != null)
+            {
+                string indent = new string(' ', (depth + 1) * 3);
+
+                sb.AppendLine($"{indent}EXCEPTION ({depth}): {current.GetType().FullName}");
+                sb.AppendLine($"{indent}Message: {current.Message}");
+
+                // Indent and format stack trace lines
+                if (!string.IsNullOrEmpty(current.StackTrace))
+                {
+                    sb.AppendLine($"{indent}StackTrace:");
+                    foreach (var line in current.StackTrace.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
+                    {
+                        sb.AppendLine($"{indent}   {line}");
+                    }
+                }
+
+                current = current.InnerException;
+                depth++;
+
+                // Add a separator only if another inner exception exists
+                if (current != null)
+                    sb.AppendLine();
+            }
+
+            // Remove trailing whitespace/newlines for clean log output
+            WriteLineFatal(sb.ToString().TrimEnd());
+        }
+
 
         public void WriteLineRethrow(Exception ex, string format, params Object[] args)
         {
-            String MsgExc = string.Format(format, args);
-            WriteLineFatal(MsgExc + Environment.NewLine + "   EXCEPTION:" + ex.ToString() + Environment.NewLine);
-            throw new ApplicationException(MsgExc, ex);
+            WriteLineException(ex, format, args);
+            throw new ApplicationException(string.Format(format, args), ex);
         }
 
         public void InitLogging(OutMode outMode = OutMode.OutConsole, string filePath = "")
         {
             _outMode = outMode;
-            InstantiateStreamWriter(filePath);
-            WriteLineInfo("START logging configured for {0} ...", _outMode);
+
+            try
+            {
+                if ((_outMode & OutMode.OutConsole) == OutMode.OutConsole)
+                {
+                    // if console is active, configure it first
+                    Trace.Listeners.Add(new ConsoleTraceListener());
+                }
+
+                if ((_outMode & OutMode.OutLogfile) == OutMode.OutLogfile)
+                {
+                    // if logfile is active
+                    string logDir = Directory.GetParent(filePath).ToString();
+
+                    if (!Directory.Exists(logDir))
+                    {
+                        Directory.CreateDirectory(logDir);
+                    }
+
+                    Trace.Listeners.Add(new TextWriterTraceListener(filePath));
+                    _filePath = filePath;
+                    _FileIsOpen = true;
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                WriteLineRethrow(ex, "Access denied. Could not instantiate StreamWriter using path: {0}.", filePath);
+            }
+
+            WriteLineDebug("START logging configured for {0} ...", _outMode);
             _IsInitialized = true;
         }
 
         public void CloseLogging()
         {
-            WriteLineInfo("STOP logging ...");
+            WriteLineDebug("STOP logging ...");
             Trace.Flush();
             Trace.Listeners.Clear();
             _IsInitialized = false;
@@ -134,47 +211,6 @@ namespace VSProjTypeExtractorManaged
             catch (UnauthorizedAccessException ex)
             {
                 throw new ApplicationException(string.Format("Access denied. Could not close StreamWriter using path: {0}.", _filePath), ex);
-            }
-        }
-
-        private void InstantiateStreamWriter(string filePath)
-        {
-            try
-            {
-                if ((_outMode & OutMode.OutLogfile) == OutMode.OutLogfile)
-                {
-                    // if logfile is active
-                    EnsureLogDirectoryExists(Directory.GetParent(filePath).ToString());
-                    Trace.Listeners.Add(new TextWriterTraceListener(filePath));
-                    _filePath = filePath;
-                    _FileIsOpen = true;
-                }
-
-                if ((_outMode & OutMode.OutConsole) == OutMode.OutConsole)
-                {
-                    // if console is active
-                    Trace.Listeners.Add(new ConsoleTraceListener());
-                }
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                Console.Error.WriteLine("Cannot open '" + filePath + "' for writing");
-                throw new ApplicationException(string.Format("Access denied. Could not instantiate StreamWriter using path: {0}.", filePath), ex);
-            }
-        }
-
-        private void EnsureLogDirectoryExists(string logDir)
-        {
-            if (!Directory.Exists(logDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(logDir);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    throw new ApplicationException(string.Format("Access denied. Could not create log directory using path: {0}.", logDir), ex);
-                }
             }
         }
     }

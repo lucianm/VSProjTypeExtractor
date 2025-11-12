@@ -74,13 +74,12 @@ namespace VSProjTypeExtractorManaged
             }
             catch (Exception e)
             {
-                conlog.WriteLineError("The value at xpath '" + strNodePath + "' could not be read:");
-                conlog.WriteLineError(e.Message);
+                conlog.WriteLineRethrow(e, "The value at xpath '{0}' could not be read...", strNodePath);
             }
             if (strValue == "")
             {
                 strValue = strDefaultVal;
-                //conlog.WriteLine("The value at xpath '" + strNodePath + "' has been replaced with the default: " + strDefaultVal);
+                conlog.WriteLineWarn("The value at xpath '{0}' has been replaced with the default: '{1}'", strNodePath, strDefaultVal);
             }
             return strValue;
         }

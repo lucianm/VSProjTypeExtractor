@@ -106,17 +106,17 @@ namespace VSProjTypeExtractorManaged
                 {
                     _outModeLogging |= ConAndLog.OutMode.OutLogfile;
                 }
-                conlog.InitLogging(_outModeLogging, _strLogPath + "\\" + _timeStampPrefix + "_" + _assemblyName + ".log");
                 conlog.SetLogLevel(cfgFile.GetTextValueAtNode("config/logging/level", Convert.ToString(ConAndLog.LogLevel.DEBUG)));
+                conlog.InitLogging(_outModeLogging, _strLogPath + "\\" + _timeStampPrefix + "_" + _assemblyName + ".log");
 
                 // the rest of settings
                 _VS_MajorVersion = Convert.ToInt32(cfgFile.GetTextValueAtNode("config/visual_studio/major_version", Convert.ToString(_VS_MajorVersion)));
-                conlog.WriteLineDebug("_VS_MajorVersion as read from config file      : " + Convert.ToString(_VS_MajorVersion));
+                conlog.WriteLineInfo("VS major version as read from config file      : " + Convert.ToString(_VS_MajorVersion));
                 Int32 verEnv = Convert.ToInt32(System.Environment.GetEnvironmentVariable("PROJTYPEXTRACT_VSVERSION"));
                 if (verEnv > 0)
                 {
                     _VS_MajorVersion = verEnv;
-                    conlog.WriteLineDebug("_VS_MajorVersion from PROJTYPEXTRACT_VSVERSION : " + Convert.ToString(_VS_MajorVersion));
+                    conlog.WriteLineInfo("VS major version from PROJTYPEXTRACT_VSVERSION : " + Convert.ToString(_VS_MajorVersion));
                 }
                 _saveVolatileSln = Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/visual_studio/save_volatile_solution", Convert.ToString(_saveVolatileSln)));
                 _showVisualStudio = Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/visual_studio/show_UI", Convert.ToString(_showVisualStudio)));
@@ -126,7 +126,7 @@ namespace VSProjTypeExtractorManaged
             }
             catch (Exception e)
             {
-                conlog.WriteLineError(e.Message);
+                conlog.WriteLineRethrow(e, "VSProjTypeWorker initialization failure!");
             }
         }
 
@@ -142,13 +142,13 @@ namespace VSProjTypeExtractorManaged
                 Func<bool> CloseSolutionAndDte = delegate ()
                 {
                     _dte.Solution.Close(_saveVolatileSln);
-                    conlog.WriteLineInfo("Closed " + _timeStampPrefix + "_" + _assemblyName + ".sln");
+                    conlog.WriteLineDebug("Closed " + _timeStampPrefix + "_" + _assemblyName + ".sln");
                     _dte.Quit();
                     return true;
                 };
 
                 RetryCall.Do<bool>(CloseSolutionAndDte, TimeSpan.FromSeconds(_projRetryAfterSeconds), _projRetriesCount);
-                conlog.WriteLineInfo("Closed Visual Studio instance");
+                conlog.WriteLineDebug("Closed Visual Studio instance");
                 _bDteInstanciated = false;
                 // and turn off the IOleMessageFilter
                 MessageFilter.Revoke();
@@ -178,7 +178,7 @@ namespace VSProjTypeExtractorManaged
                     _dte.MainWindow.Visible = _showVisualStudio;
                     _dte.SuppressUI = !_showVisualStudio;
                     _dte.UserControl = _showVisualStudio;
-                    conlog.WriteLineInfo("Instanciated " + VisualStudioDTEVerString);
+                    conlog.WriteLineDebug("Instanciated " + VisualStudioDTEVerString);
 
                     _dte.Solution.Create(Path.GetTempPath(), _timeStampPrefix + "_" + _assemblyName + ".sln");
                     _bDteInstanciated = true;
@@ -186,7 +186,7 @@ namespace VSProjTypeExtractorManaged
                     // wait 5 more seconds TODO: check again  at some point, if this can be done more elegant by registering a message filter to
                     // handle busy call errors https://docs.microsoft.com/en-us/previous-versions/ms228772(v=vs.140)?redirectedfrom=MSDN
                     System.Threading.Thread.Sleep(1000 * _solutionSleepAfterCreate);
-                    conlog.WriteLineInfo(_assemblyName + ".sln created");
+                    conlog.WriteLineDebug(_assemblyName + ".sln created");
                 }
 
                 // add project to retrieve its type Guid and configurations if possible
@@ -197,27 +197,71 @@ namespace VSProjTypeExtractorManaged
                     Func<string, EnvDTE.Project> AddProjectFromFile = delegate (string path)
                     {
                         Project projLoaded = _dte.Solution.AddFromFile(path);
-                        conlog.WriteLineInfo("Project '" + path + "' loaded into " + _timeStampPrefix + "_" + _assemblyName + ".sln");
+                        //conlog.WriteLineDebug("Project '" + path + "' loaded into " + _timeStampPrefix + "_" + _assemblyName + ".sln");
                         return projLoaded;
                     };
                     EnvDTE.Project myLoadedProject = RetryCall.Do<string>(AddProjectFromFile, projPath, TimeSpan.FromSeconds(_projRetryAfterSeconds), _projRetriesCount);
+
+                    // store project kind GUID
                     projData._TypeGuid = myLoadedProject.Kind.ToString();
-                    EnvDTE.Configurations projectConfigurations;
-                    foreach (object projectConfigurationName in (object[])myLoadedProject.ConfigurationManager.ConfigurationRowNames)
+                    conlog.WriteLineDebug("Loaded project '{0}' of kind {1} into '{2}'", projPath, projData._TypeGuid, _timeStampPrefix + "_" + _assemblyName + ".sln");
+
+                    // attempt to get ConfigurationManager
+                    EnvDTE.ConfigurationManager configMgr = null;
+                    try
                     {
-                        projectConfigurations = myLoadedProject.ConfigurationManager.ConfigurationRow(projectConfigurationName.ToString());
+                        configMgr = myLoadedProject.ConfigurationManager;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        // occurs for project types like WiX that do not support ConfigurationManager
+                        conlog.WriteLineWarn("Project '{0}' (Kind={1}) does not expose ConfigurationManager, EXCEPTION: {2}", projPath, projData._TypeGuid, ex.Message);
+                        // still return true; project type GUID is valid
+                        return true;
+                    }
+
+                    if (configMgr == null)
+                    {
+                        conlog.WriteLineWarn("Project '{0}' (Kind={1}) has null ConfigurationManager — skipping configuration enumeration.", projPath, projData._TypeGuid);
+                        return true;
+                    }
+
+                    // attempt to get configuration row names
+                    object rowNamesObj = null;
+                    try
+                    {
+                        rowNamesObj = configMgr.ConfigurationRowNames;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        conlog.WriteLineWarn("Project '{0}' (Kind={1}) ConfigurationRowNames not available, EXCEPTION: {2}", projPath, projData._TypeGuid, ex.Message);
+                        return true;
+                    }
+
+                    if (rowNamesObj == null)
+                    {
+                        conlog.WriteLineWarn("Project '{0}' (Kind={1}) returned null ConfigurationRowNames — skipping configuration enumeration.", projPath, projData._TypeGuid);
+                        return true;
+                    }
+
+                    // enumerate configurations safely
+                    foreach (object projectConfigurationName in (object[])rowNamesObj)
+                    {
+                        var projectConfigurations = configMgr.ConfigurationRow(projectConfigurationName.ToString());
                         foreach (EnvDTE.Configuration projectConfiguration in projectConfigurations)
                         {
                             projData.AddConfigPlatform(projectConfiguration.ConfigurationName, projectConfiguration.PlatformName);
                         }
                     }
+
                     return true;
+
                 }
                 return false;
             }
             catch (Exception ex)
             {
-                conlog.WriteLineError("\n{0}\noccured for project file '{1}' loaded in Visual Studio {2}", ex.ToString(), projPath, _VS_MajorVersion);
+                conlog.WriteLineException(ex, "occured for project file '{0}' loaded in Visual Studio {1}", projPath, _VS_MajorVersion);
                 return false;
             }
         }

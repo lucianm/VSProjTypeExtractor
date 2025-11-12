@@ -73,30 +73,47 @@ namespace VSProjTypeExtractor {
         System::Object^ m_LockableObject;
     public:
         static property ConsoleLogger^ Instance { ConsoleLogger^ get() { return % m_instance; } }
+
         void WriteLineDebug(System::String^ format, ... array<Object^>^ args)
         {
-            //msclr::lock lock(m_LockableObject);
+            // No lock needed — backend is thread-safe
             m_managedConLog->WriteLineDebug(format, args);
         }
+
         void WriteLineInfo(System::String^ format, ... array<Object^>^ args)
         {
-            //msclr::lock lock(m_LockableObject);
+            // No lock needed — backend is thread-safe
             m_managedConLog->WriteLineInfo(format, args);
         }
+
         void WriteLineWarn(System::String^ format, ... array<Object^>^ args)
         {
-            //msclr::lock lock(m_LockableObject);
+            // No lock needed — backend is thread-safe
             m_managedConLog->WriteLineWarn(format, args);
         }
+
         void WriteLineError(System::String^ format, ... array<Object^>^ args)
         {
-            //msclr::lock lock(m_LockableObject);
+            // No lock needed — backend is thread-safe
             m_managedConLog->WriteLineError(format, args);
         }
+
         void WriteLineFatal(System::String^ format, ... array<Object^>^ args)
         {
-            //msclr::lock lock(m_LockableObject);
+            // No lock needed — backend is thread-safe
             m_managedConLog->WriteLineFatal(format, args);
+        }
+
+        void WriteLineException(System::Exception^ ex, System::String^ format, ... array<System::Object^>^ args)
+        {
+            // No lock needed — backend is thread-safe
+            m_managedConLog->WriteLineException(ex, format, args);
+        }
+
+        void WriteLineRethrow(System::Exception^ ex, System::String^ format, ... array<System::Object^>^ args)
+        {
+            // No lock needed — backend is thread-safe
+            m_managedConLog->WriteLineRethrow(ex, format, args);
         }
     };
 }
@@ -127,21 +144,24 @@ bool Vspte_GetProjData(const char* projPath, ExtractedProjData* projData)
     
     // clean out data
     memset(projData, 0, sizeof(ExtractedProjData));
-
     System::String^ strProjPath = gcnew System::String(projPath);
-    try {
+
+    try
+    {
         VSProjTypeExtractorManaged::ExtractedProjData^ ProjData = gcnew VSProjTypeExtractorManaged::ExtractedProjData();
         bSuccess = VSProjTypeExtractor::ClassWorker::Instance->GetProjDataManaged(strProjPath, ProjData);
 
-        if (	bSuccess &&
-                ProjData->_TypeGuid->Length >= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH - 1 &&
-                unsigned int(ProjData->_TypeGuid->Length) <= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH )
+        if (bSuccess &&
+            ProjData->_TypeGuid->Length >= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH - 1 &&
+            static_cast<unsigned int>(ProjData->_TypeGuid->Length) <= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH)
         {
-            msclr::interop::marshal_context^ context = gcnew msclr::interop::marshal_context();
-            const char* str = context->marshal_as<const char*>(ProjData->_TypeGuid);
-            strcpy_s(projData->_TypeGuid, VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH, str);
+            // Single marshal_context for all conversions
+            msclr::interop::marshal_context context;
 
-            // if there are any config/platforms at all:
+            const char* typeGuidCStr = context.marshal_as<const char*>(ProjData->_TypeGuid);
+            strncpy_s(projData->_TypeGuid, VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH, typeGuidCStr, _TRUNCATE);
+
+            // Config/Platform entries
             if (ProjData->_ConfigsPlatforms && ProjData->_ConfigsPlatforms->Length > 0)
             {
                 projData->_numCfgPlatforms = ProjData->_ConfigsPlatforms->Length;
@@ -151,27 +171,22 @@ bool Vspte_GetProjData(const char* projPath, ExtractedProjData* projData)
                 {
                     memset(&projData->_pConfigsPlatforms[i], 0, sizeof(ExtractedCfgPlatform));
 
-                    str = context->marshal_as<const char*>(ProjData->_ConfigsPlatforms[i]->_config);
-                    strcpy_s(projData->_pConfigsPlatforms[i]._config, VSPROJ_MAXSTRING_LENGTH, str);
+                    const char* cfgCStr = context.marshal_as<const char*>(ProjData->_ConfigsPlatforms[i]->_config);
+                    strncpy_s(projData->_pConfigsPlatforms[i]._config, VSPROJ_MAXSTRING_LENGTH, cfgCStr, _TRUNCATE);
 
-                    str = context->marshal_as<const char*>(ProjData->_ConfigsPlatforms[i]->_platform);
-                    strcpy_s(projData->_pConfigsPlatforms[i]._platform, VSPROJ_MAXSTRING_LENGTH, str);
+                    const char* platformCStr = context.marshal_as<const char*>(ProjData->_ConfigsPlatforms[i]->_platform);
+                    strncpy_s(projData->_pConfigsPlatforms[i]._platform, VSPROJ_MAXSTRING_LENGTH, platformCStr, _TRUNCATE);
                 }
             }
-
-            delete context;
-            bSuccess = true;
         }
+
+        return bSuccess;
     }
     catch (System::Exception^ e)
     {
-        VSProjTypeExtractor::ConsoleLogger::Instance->WriteLineFatal("\n{0}\noccured for project file '{1}' loaded in Visual Studio {2}", e->ToString(), strProjPath);
-        if (e->InnerException)
-        {
-            VSProjTypeExtractor::ConsoleLogger::Instance->WriteLineFatal("\nInner exception: {0}\n", e->InnerException->ToString());
-        }
+        VSProjTypeExtractor::ConsoleLogger::Instance->WriteLineException(e, "occurred for project file '{0}'", strProjPath);
+        return false;
     }
-    return bSuccess;
 }
 
 void Vspte_DeallocateProjDataCfgArray(ExtractedProjData* projData)
