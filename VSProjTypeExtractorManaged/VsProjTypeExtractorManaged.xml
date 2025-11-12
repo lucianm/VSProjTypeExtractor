@@ -11,10 +11,9 @@
     </workaround_busy_app>
   </visual_studio>
   <logging>
-      <level>DEBUG</level>
-      <!--default value is DEBUG, higher levels can be: INFO, WARN, ERROR, FATAL-->
-    <enable_console>true</enable_console>
     <enable_logfile>false</enable_logfile>
+      <level>INFO</level>
+      <!--default value is INFO, levels in ascending order can be: DEBUG, INFO, WARN, ERROR, FATAL-->
     <logfile_path></logfile_path><!--if the folder is not empty, this will be used instead of the user's TMP folder -->
   </logging>
 </config>

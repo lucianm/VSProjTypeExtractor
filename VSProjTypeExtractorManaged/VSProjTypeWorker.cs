@@ -94,8 +94,8 @@ namespace VSProjTypeExtractorManaged
             {
                 SimpleXmlCfgReader cfgFile = new SimpleXmlCfgReader(_assemblyFolder + "\\" + _assemblyName + ".xml");
 
-                // configure logger
-                bool bLogConsole = Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/logging/enable_console", Convert.ToString(false)));
+                // configure logger (let's have the console logging always activated)
+                bool bLogConsole = true; // Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/logging/enable_console", Convert.ToString(false)));
                 bool bLogFile = Convert.ToBoolean(cfgFile.GetTextValueAtNode("config/logging/enable_logfile", Convert.ToString(false)));
                 _strLogPath = cfgFile.GetTextValueAtNode("config/logging/logfile_path", Path.GetTempPath());
                 if (bLogConsole)
