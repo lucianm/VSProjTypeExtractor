@@ -1,7 +1,7 @@
 /*
     VSProjTypeExtractor - Visual Studio project type GUID extractor
     VSProjTypeWorker.cs - Managed code implementation
-    Copyright (c) 2019, Lucian Muresan.
+    Copyright (c) 2019 - 2025, Lucian Muresan.
 
     MIT License
 

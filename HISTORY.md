@@ -1,5 +1,11 @@
 # VSProjTypeExtractor
 
+* v0.9.0.0 - published 2025.11.13:
+    - improved logging, added loglevels configurable in the XML config file, console logging is always active and the default level is INFO;
+    - replaced the delegate + RetryCall.Do pattern with an STA thread in the COM automation for extracting the project features,
+    this also tolerates transient errors caused by incomplete "readiness" of VStudio when loading certain projects is retried by
+    an exponential back off scheme to avoid hammering the DTE, increasing robustness of operation;
+
 * v0.8.0.0 - published 2023.10.19:
     - switched configured Visual Studio version which is instrumented to 17 (2022);
     - solution version bumped to 17;

@@ -1,7 +1,7 @@
 /*
     VSProjTypeExtractor - Visual Studio project type GUID extractor
     VSProjTypeExtractor.cpp - Implementation File
-    Copyright (c) 2020, Lucian Muresan.
+    Copyright (c) 2020 - 2025, Lucian Muresan.
 
     MIT License
 
