@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <config>
-  <visual_studio>
-    <major_version>17</major_version><!--adapt this to the Visual Studio version installed and configured with all project types to be extracted, this can also be overridden by the PROJTYPEXTRACT_VSVERSION-->
-    <save_volatile_solution>false</save_volatile_solution><!--if set to true, the volatile solution used to load the projects into will be saved to the user's TMP folder-->
-    <show_UI>false</show_UI><!--if set to true, the Visual Studio UI is shown while being instrumented, to help seeing possible messages and popups in case of problems during extraction of GUIDs-->
-    <workaround_busy_app><!--often when controlling Visual Studio, the application may stay busy for a while, these values may help waiting enough to overcome the situation-->
-      <sleep_seconds_after_create_solution>5</sleep_seconds_after_create_solution>
-      <sleep_seconds_before_retry_project>5</sleep_seconds_before_retry_project>
-      <num_retries_project>3</num_retries_project>
-    </workaround_busy_app>
-  </visual_studio>
-  <logging>
-    <enable_logfile>false</enable_logfile>
-      <level>INFO</level>
-      <!--default value is INFO, levels in ascending order can be: DEBUG, INFO, WARN, ERROR, FATAL-->
-    <logfile_path></logfile_path><!--if the folder is not empty, this will be used instead of the user's TMP folder -->
-  </logging>
+    <visual_studio>
+        <major_version>17</major_version>
+        <!--adapt this to the Visual Studio version installed and configured with all project types to be extracted, this can also be overridden by the PROJTYPEXTRACT_VSVERSION-->
+        <save_volatile_solution>false</save_volatile_solution>
+        <!--if set to true, the volatile solution used to load the projects into will be saved to the user's TMP folder-->
+        <show_UI>false</show_UI>
+        <!--if set to true, the Visual Studio UI is shown while being instrumented, to help seeing possible messages and popups in case of problems during extraction of GUIDs-->
+        <workaround_busy_app>
+            <!--often when controlling Visual Studio, the application may stay busy for a while, these values may help waiting enough to overcome the situation-->
+            <sleep_seconds_after_create_solution>1.5</sleep_seconds_after_create_solution>
+            <retry_project>
+                <initial_sleep_seconds>0.5</initial_sleep_seconds>
+                <!--(double): initial base sleep interval after which loading an external project is retried, subsequent intervals will grow exponentially to avoid stressing the system-->
+                <estimated_total_seconds>10</estimated_total_seconds>
+                <!--(double): approximate timeout interval during which loading the external project is retried after exponentially growing intervals which fit in, or at least min_attempts-->
+                <min_attempts>2</min_attempts>
+                <!--(unsigned int): minimum retry attempts count-->
+            </retry_project>
+        </workaround_busy_app>
+    </visual_studio>
+    <logging>
+        <enable_logfile>false</enable_logfile>
+        <level>INFO</level>
+        <!--default value is INFO, levels in ascending order can be: DEBUG, INFO, WARN, ERROR, FATAL-->
+        <logfile_path/>
+        <!--if the folder is not empty, this will be used instead of the user's TMP folder -->
+    </logging>
 </config>

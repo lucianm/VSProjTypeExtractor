@@ -37,25 +37,45 @@
 
 
 namespace VSProjTypeExtractor {
+
+
+
+    // ClassWorker.h / ClassWorker.cpp (C++/CLI)
     public ref class ClassWorker
     {
     private:
-        ClassWorker(){}
+        ClassWorker() :
+            m_managedWorker(gcnew VSProjTypeExtractorManaged::VSProjTypeWorker()),
+            m_LockableObject(gcnew System::Object())
+        {
+        }
         ClassWorker(const ClassWorker%) { throw gcnew System::InvalidOperationException("ClassWorker cannot be copy-constructed"); }
+
         static ClassWorker m_instance;
-        VSProjTypeExtractorManaged::VSProjTypeWorker m_managedWorker;
-        System::Object m_LockableObject;
+        VSProjTypeExtractorManaged::VSProjTypeWorker^ m_managedWorker;
+        System::Object^ m_LockableObject;
+
     public:
         static property ClassWorker^ Instance { ClassWorker^ get() { return % m_instance; } }
-        boolean GetProjDataManaged(System::String^ projPath, VSProjTypeExtractorManaged::ExtractedProjData^ projData)
+
+        // returns the managed ExtractedProjData^ (or nullptr on failure)
+        VSProjTypeExtractorManaged::ExtractedProjData^ GetProjDataManaged(System::String^ projPath)
         {
-            msclr::lock lock(%m_LockableObject);
-            return m_managedWorker.ExtractProjectData(projPath, projData);
+            msclr::lock lock(m_LockableObject);
+            try
+            {
+                return m_managedWorker->ExtractProjectData(projPath);
+            }
+            catch (System::Exception^)
+            {
+                return nullptr;
+            }
         }
+
         void CleanUp()
         {
-            msclr::lock lock(%m_LockableObject);
-            m_managedWorker.CleanUp();
+            msclr::lock lock(m_LockableObject);
+            m_managedWorker->CleanUp();
         }
     };
 
@@ -148,12 +168,10 @@ bool Vspte_GetProjData(const char* projPath, ExtractedProjData* projData)
 
     try
     {
-        VSProjTypeExtractorManaged::ExtractedProjData^ ProjData = gcnew VSProjTypeExtractorManaged::ExtractedProjData();
-        bSuccess = VSProjTypeExtractor::ClassWorker::Instance->GetProjDataManaged(strProjPath, ProjData);
+        VSProjTypeExtractorManaged::ExtractedProjData^ ProjData = VSProjTypeExtractor::ClassWorker::Instance->GetProjDataManaged(strProjPath);
+        bSuccess = ProjData != nullptr;
 
-        if (bSuccess &&
-            ProjData->_TypeGuid->Length >= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH - 1 &&
-            static_cast<unsigned int>(ProjData->_TypeGuid->Length) <= VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH)
+        if (bSuccess && ProjData->_TypeGuid != nullptr && ProjData->_TypeGuid->Length > 0)
         {
             // Single marshal_context for all conversions
             msclr::interop::marshal_context context;
