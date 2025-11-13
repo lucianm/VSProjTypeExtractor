@@ -274,4 +274,4 @@ if (VspteModuleWrapper::Instance()->IsLoaded()) {
 
 ```
 
-Copyright © 2019 - 2023 Lucian Mureșan
+Copyright © 2019 - 2025 Lucian Mureșan
