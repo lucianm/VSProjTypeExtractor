@@ -5,7 +5,7 @@ Visual Studio project type GUID extractor
 
 ## What is it all about?
 
-**_VSProjTypeExtractor_** can be used in **[FASTBuild](http://fastbuild.org/docs/home.html)** together with the new
+**_VSProjTypeExtractor_** can be used in **[FASTBuild](http://fastbuild.org/docs/home.html)** together with the
 _VSProjectExternal_ function to automatically determine the `ProjectTypeGuid` from the actual external visual studio
 project:
 ```
@@ -32,7 +32,7 @@ to be installed on your system. Just place them somewhere in the 'PATH' or along
 _VSProjectExternal_, post-v0.99 in any case) in the same directory.
 
 The module has a configuration file [VsProjTypeExtractorManaged.xml](https://github.com/lucianm/VSProjTypeExtractor/blob/master/VSProjTypeExtractorManaged/VsProjTypeExtractorManaged.xml),
-please have a look in the comments there if logging should be enabled (it is default off) or Visual Studio automation timing needs to be tuned.
+please have a look in the comments there if the logging level needs to be lowered to `DEBUG` (the default is `INFO`) or Visual Studio automation timing needs to be tuned.
 
 
 ## Developer information on integrating in applications
