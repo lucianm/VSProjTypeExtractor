@@ -2,27 +2,25 @@
 
 Visual Studio project type GUID extractor
 
-
 ## What is it all about?
 
 **_VSProjTypeExtractor_** can be used in **[FASTBuild](http://fastbuild.org/docs/home.html)** together with the
 _VSProjectExternal_ function to automatically determine the `ProjectTypeGuid` from the actual external visual studio
 project:
-```
+
+```c
 VSProjectExternal( 'SomeExternal-vsproj' )
 {
     .ExternalProjectPath = 'path_to\ExternalProject.csproj'
 }
 ```
 
-
 ## How does it work?
 
 **_VSProjTypeExtractor_** consists of 2 DLLs, `VSProjTypeExtractorManaged.dll` which is written in C# and is responsible
 of the actual work, by automating Visual Studio in the background for loading the project file just to be able to query
-the type GUID, and the `VSProjTypeExtractor.dll` **C** wrapper which can be used in any native apllication to call this
+the type GUID, and the `VSProjTypeExtractor.dll` **C** wrapper which can be used in any native application to call this
 functionality.
-
 
 ## Requirements, Usage
 
@@ -33,7 +31,6 @@ _VSProjectExternal_, post-v0.99 in any case) in the same directory.
 
 The module has a configuration file [VsProjTypeExtractorManaged.xml](https://github.com/lucianm/VSProjTypeExtractor/blob/master/VSProjTypeExtractorManaged/VsProjTypeExtractorManaged.xml),
 please have a look in the comments there if the logging level needs to be lowered to `DEBUG` (the default is `INFO`) or Visual Studio automation timing needs to be tuned.
-
 
 ## Developer information on integrating in applications
 
@@ -53,7 +50,8 @@ will be very quick;
 - before any subsequent call, please make sure to call `Vspte_DeallocateProjDataCfgArray` on the already used ExtractedProjData object;
 - optionally, at the end `Vspte_CleanUp()` can be called, but at application exit this will be called anyway on destruction of objects and garbage collection;
 - sample code:
-```
+
+```c++
 #include <VSProjTypeExtractor.h>
 
 ExtractedProjData projData;;
@@ -75,10 +73,11 @@ Vspte_CleanUp();
 
 ### Dynamic (less invasive) integration
 
-- Write a header, or [grab the one contained in the test application, *VSProjLoaderInterface.h*](https://github.com/lucianm/VSProjTypeExtractor/blob/master/VSProjTypeExtractorTest/VSProjLoaderInterface.h)
+- Write a header, or [grab the one contained in the test application, _VSProjLoaderInterface.h_](https://github.com/lucianm/VSProjTypeExtractor/blob/master/VSProjTypeExtractorTest/VSProjLoaderInterface.h)
 in which you should make sure to use exact copies of the #defines for VSPROJ_TYPEEXTRACT_MAXGUID_LENGTH and VSPROJ_MAXSTRING_LENGTH, and also of the structs ExtractedCfgPlatform and ExtractedProjData,
 for the rest of the implementation you are of course free to modify the code as you like, but if it were a copy it should look like this sample:
-```
+
+```c++
 /*
     Implements loading / unloading VSProjTypeExtractor.dll dynamically, in order to avoid linking against the .lib
 */
@@ -237,7 +236,8 @@ will be very quick;
 - optionally, `VspteModuleWrapper::Instance()->Vspte_CleanUp()` can be called, but at application exit this will be called anyway on destruction of
 objects and garbage collection
 - for actually using the interface code, include this new header in your code and write something like:
-```
+
+```c++
 #include "VSProjLoaderInterface.h"
 
 if (!VspteModuleWrapper::Instance()->IsLoaded()) {
